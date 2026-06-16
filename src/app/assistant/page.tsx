@@ -63,7 +63,7 @@ export default function VoiceAssistant() {
     setChatHistory([
       {
         sender: "ai",
-        text: "আসসালামু আলাইকুম! আমি এ্যারোস্টোন এআই ভয়েস অ্যাসিস্ট্যান্ট। পরিবেশবান্ধব এ্যারোস্টোন প্রজেক্ট সম্পর্কে যেকোনো বৈজ্ঞানিক তথ্য বা প্রশ্ন জানার জন্য গোলকের ওপর ক্লিক করে কথা বলুন অথবা নিচে টাইপ করুন।"
+        text: "আসসালামু আলাইকুম! আমি Air Purifying Concrete Block প্রজেক্টের এআই ভয়েস অ্যাসিস্ট্যান্ট। এই পরিবেশবান্ধব প্রজেক্ট সম্পর্কে যেকোনো বৈজ্ঞানিক তথ্য বা প্রশ্ন জানার জন্য গোলকের ওপর ক্লিক করে কথা বলুন অথবা নিচে টাইপ করুন."
       }
     ]);
 
@@ -459,8 +459,8 @@ export default function VoiceAssistant() {
               <Sparkles className="w-5 h-5 animate-pulse" />
             </div>
             <div className="text-left">
-              <div className="text-sm font-extrabold text-slate-800 tracking-wide">এ্যারোস্টোন এআই ভয়েস অ্যাসিস্ট্যান্ট</div>
-              <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">AeroStone Interactive System</div>
+              <div className="text-sm font-extrabold text-slate-800 tracking-wide">Air Purifying Concrete Block AI</div>
+              <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Air Purifying Concrete Block</div>
             </div>
           </div>
 
@@ -544,7 +544,7 @@ export default function VoiceAssistant() {
                 </div>
                 <div>
                   <div className="text-xs font-extrabold text-slate-800">অ্যাসিস্ট্যান্ট কথোপকথন ফিড</div>
-                  <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">AeroStone Dialogue History</div>
+                  <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Air Purifying Concrete Block Dialogue History</div>
                 </div>
               </div>
               
@@ -649,7 +649,7 @@ export default function VoiceAssistant() {
 
       {/* Footer */}
       <footer className="py-6 text-center text-[10px] text-slate-400 font-bold border-t border-slate-200/50 bg-white/50 backdrop-blur-sm relative z-10">
-        © 2026 এ্যারোস্টোন সায়েন্স ফেয়ার অ্যাসিস্ট্যান্ট • যশোর পলিটেকনিক ইনস্টিটিউট
+        © 2026 Air Purifying Concrete Block • যশোর পলিটেকনিক ইনস্টিটিউট
       </footer>
 
     </div>

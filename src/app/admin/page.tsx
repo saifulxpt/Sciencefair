@@ -46,7 +46,7 @@ function Toast({ message, type, onClose }: { message: string; type: "success" | 
 }
 
 const SLIDES: Record<number, { title: string; emoji: string; desc: string }> = {
-  1: { title: "প্রজেক্ট পরিচিতি", emoji: "🏗️", desc: "AeroStone 3D মডেল" },
+  1: { title: "প্রজেক্ট পরিচিতি", emoji: "🏗️", desc: "Air Purifying Concrete Block" },
   2: { title: "সমস্যা ও উদ্দেশ্য", emoji: "🌫️", desc: "ঢাকার বায়ুদূষণ" },
   3: { title: "সমাধান সূত্র", emoji: "💡", desc: "ফটোক্যাটালাইটিক ব্লক" },
   4: { title: "মিশ্রণ ও অনুপাত", emoji: "⚗️", desc: "TiO₂ নানোপার্টিকেল" },
@@ -252,8 +252,8 @@ export default function AdminPanel() {
         <div style={s.logo}>
           <div style={s.logoIcon}><Sliders size={15} color="#0d1117" /></div>
           <div>
-            <div style={s.logoText}>এ্যারোস্টোন অ্যাডমিন</div>
-            <div style={s.logoSub}>Science Fair 2026</div>
+            <div style={s.logoText}>Air Purifying Concrete Block</div>
+            <div style={s.logoSub}>Admin Console • Science Fair 2026</div>
           </div>
         </div>
 
@@ -604,7 +604,7 @@ export default function AdminPanel() {
 
       {/* Footer */}
       <div style={{ textAlign: "center", padding: "20px 0 32px", fontSize: 11, color: C.dim, borderTop: `1px solid ${C.border}`, marginTop: 8 }}>
-        © 2026 এ্যারোস্টোন • যশোর পলিটেকনিক ইনস্টিটিউট • Science Fair Admin Console
+        © 2026 Air Purifying Concrete Block • যশোর পলিটেকনিক ইনস্টিটিউট • Science Fair 2026
       </div>
     </div>
   );

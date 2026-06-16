@@ -15,8 +15,8 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "AeroStone | Photocatalytic Air-Purifying Concrete Block Project",
-  description: "Science fair project website demonstrating air-purifying concrete blocks that degrade nitrogen oxides (NOx) using TiO2 photocatalysis under solar radiation.",
+  title: "Air Purifying Concrete Block | Photocatalytic Science Fair Project",
+  description: "Science fair project demonstrating Air Purifying Concrete Block that degrades nitrogen oxides (NOx) using TiO2 photocatalysis under solar radiation. Presented at Jashore Polytechnic Institute Science Fair 2026.",
 };
 
 export default function RootLayout({

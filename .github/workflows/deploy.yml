@@ -81,9 +81,25 @@ jobs:
             chown -R www-data:www-data /var/www/airpurifying-concrete/ || true
             chmod -R 775 /var/www/airpurifying-concrete/ || true
 
+            # Install Certbot if not installed
+            if ! command -v certbot &> /dev/null; then
+                sudo apt-get update -qq
+                sudo apt-get install -y certbot python3-certbot-nginx
+            fi
+
+            # Issue SSL certificate if not already issued
+            if [ ! -f /etc/letsencrypt/live/server.saifulinfo.com/fullchain.pem ]; then
+                sudo certbot --nginx -d server.saifulinfo.com --non-interactive --agree-tos -m saifulinfo.vps@gmail.com
+            fi
+
+            # Copy nginx config
+            sudo cp /var/www/airpurifying-concrete/nginx-site.conf /etc/nginx/sites-available/airpurifying-concrete
+            sudo ln -sf /etc/nginx/sites-available/airpurifying-concrete /etc/nginx/sites-enabled/airpurifying-concrete
+            sudo rm -f /etc/nginx/sites-enabled/default
+
+            # Test nginx config and restart
+            sudo nginx -t && sudo systemctl restart nginx
+
             # Start Next.js server on port 3000
             pm2 restart next-app || pm2 start server.js --name "next-app"
             pm2 save
-
-            # Restart Nginx
-            sudo systemctl restart nginx
