@@ -1171,6 +1171,49 @@ body {
   }
 }
 
+/* Mobile Responsiveness overrides for voice assistant holographic orb container */
+@media (max-width: 768px) {
+  .holo-orb-container {
+    width: 200px !important;
+    height: 200px !important;
+  }
+  .holo-ring-outer {
+    width: 190px !important;
+    height: 190px !important;
+  }
+  .holo-ring-middle {
+    width: 155px !important;
+    height: 155px !important;
+  }
+  .holo-ring-inner {
+    width: 120px !important;
+    height: 120px !important;
+  }
+  .holo-core-orb {
+    width: 90px !important;
+    height: 90px !important;
+  }
+  .holo-core-orb > div {
+    width: 56px !important;
+    height: 56px !important;
+  }
+  .holo-core-orb svg {
+    width: 22px !important;
+    height: 22px !important;
+  }
+  .holo-orb-container.listening .holo-ring-outer {
+    width: 200px !important;
+    height: 200px !important;
+  }
+  .holo-orb-container.processing .holo-ring-middle {
+    width: 150px !important;
+    height: 150px !important;
+  }
+  .chat-container {
+    height: 380px !important;
+  }
+}
+
 
 
 

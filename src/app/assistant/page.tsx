@@ -109,6 +109,12 @@ export default function VoiceAssistant() {
       }
 
       synthRef.current = window.speechSynthesis;
+      if (synthRef.current) {
+        synthRef.current.getVoices();
+        synthRef.current.onvoiceschanged = () => {
+          synthRef.current?.getVoices();
+        };
+      }
     }
 
     return () => {
@@ -335,16 +341,25 @@ export default function VoiceAssistant() {
     const cleanedText = text.replace(/[*#_\-`]/g, "");
     const utterance = new SpeechSynthesisUtterance(cleanedText);
     utterance.lang = "bn-BD";
+    utterance.rate = 0.95; // Slightly slower speed for clearer, more natural Bangla pronunciation
     
     const voices = synthRef.current.getVoices();
-    const bnVoice = voices.find(v => v.lang.includes("bn-BD") || v.lang.includes("bn-IN"));
+    // Prioritize Google's cloud Bangla voice for a premium natural sound
+    let bnVoice = voices.find(v => v.lang.includes("bn") && v.name.includes("Google"));
+    if (!bnVoice) {
+      bnVoice = voices.find(v => v.lang.includes("bn-BD") || v.lang.includes("bn-IN") || v.lang.startsWith("bn"));
+    }
+    
     if (bnVoice) {
       utterance.voice = bnVoice;
     }
     
     utterance.onstart = () => setStatus("speaking");
     utterance.onend = () => setStatus("idle");
-    utterance.onerror = () => setStatus("idle");
+    utterance.onerror = (e) => {
+      console.error("Speech Synthesis Error:", e);
+      setStatus("idle");
+    };
     
     utteranceRef.current = utterance;
     synthRef.current.speak(utterance);
