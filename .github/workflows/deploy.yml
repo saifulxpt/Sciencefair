@@ -1,0 +1,55 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - master
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm ci || npm install
+
+      - name: Build Application
+        run: npm run build
+
+      - name: Deploy static files to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          source: "out/*"
+          target: "/var/www/airpurifying-concrete/"
+          strip_components: 1
+
+      - name: Deploy API files to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          source: "api/*"
+          target: "/var/www/airpurifying-concrete/api/"
+          strip_components: 1
+
+      - name: Set Permissions on Server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: |
+            chown -R www-data:www-data /var/www/airpurifying-concrete/
+            chmod -R 775 /var/www/airpurifying-concrete/

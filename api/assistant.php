@@ -13,7 +13,7 @@ $action = $_GET['action'] ?? '';
 
 // Configuration Helper Function
 function get_config($config_file) {
-    $default_prompt = "You are the AeroStone AI Voice Assistant (অ্যারোস্টোন এআই ভয়েস অ্যাসিস্ট্যান্ট). 
+    $default_prompt = "You are the AeroStone AI Voice Assistant (এ্যারোস্টোন এআই ভয়েস অ্যাসিস্ট্যান্ট). 
 You are presenting at Science Fair 2026. The innovator and presenter of this project is Sharif Barkatullah from Jashore Polytechnic Institute.
 Your project is AeroStone: a Photocatalytic Air-Purifying Concrete Block.
 

@@ -31,10 +31,10 @@ type Message = {
 type AssistantStatus = "idle" | "listening" | "processing" | "speaking";
 
 const sampleQuestions = [
-  "অ্যারোস্টোন প্রজেক্টটি কী এবং এটি কীভাবে কাজ করে?",
+  "এ্যারোস্টোন প্রজেক্টটি কী এবং এটি কীভাবে কাজ করে?",
   "এই ব্লকের উপাদানসমূহ ও মিক্স রেশিও কী?",
   "ফটোক্যাটালাইসিস কেমিক্যাল রিঅ্যাকশন সম্পর্কে বলুন।",
-  "অ্যারোস্টোন ব্লক কতটুকু দূষণ কমাতে পারে?",
+  "এ্যারোস্টোন ব্লক কতটুকু দূষণ কমাতে পারে?",
   "এরকম সায়েন্টিফিক ব্লক ব্যবহারে কী খরচ বাড়বে?"
 ];
 
@@ -43,6 +43,7 @@ export default function VoiceAssistant() {
   const [inputText, setInputText] = useState("");
   const [chatHistory, setChatHistory] = useState<Message[]>([]);
   const [isMuted, setIsMuted] = useState(false);
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [recognition, setRecognition] = useState<any>(null);
   
@@ -62,7 +63,7 @@ export default function VoiceAssistant() {
     setChatHistory([
       {
         sender: "ai",
-        text: "আসসালামু আলাইকুম! আমি অ্যারোস্টোন এআই ভয়েস অ্যাসিস্ট্যান্ট। পরিবেশবান্ধব অ্যারোস্টোন প্রজেক্ট সম্পর্কে যেকোনো বৈজ্ঞানিক তথ্য বা প্রশ্ন জানার জন্য গোলকের ওপর ক্লিক করে কথা বলুন অথবা নিচে টাইপ করুন।"
+        text: "আসসালামু আলাইকুম! আমি এ্যারোস্টোন এআই ভয়েস অ্যাসিস্ট্যান্ট। পরিবেশবান্ধব এ্যারোস্টোন প্রজেক্ট সম্পর্কে যেকোনো বৈজ্ঞানিক তথ্য বা প্রশ্ন জানার জন্য গোলকের ওপর ক্লিক করে কথা বলুন অথবা নিচে টাইপ করুন।"
       }
     ]);
 
@@ -329,7 +330,7 @@ export default function VoiceAssistant() {
   // Speak text output
   const speakText = (text: string) => {
     stopSpeaking();
-    if (isMuted || !synthRef.current) return;
+    if (isMuted || !synthRef.current || !voiceEnabled) return;
     
     const cleanedText = text.replace(/[*#_\-`]/g, "");
     const utterance = new SpeechSynthesisUtterance(cleanedText);
@@ -392,8 +393,12 @@ export default function VoiceAssistant() {
       
       if (data.status === "success") {
         setChatHistory((prev) => [...prev, { sender: "ai", text: data.response }]);
-        setStatus("speaking");
-        speakText(data.response);
+        if (voiceEnabled && !isMuted) {
+          setStatus("speaking");
+          speakText(data.response);
+        } else {
+          setStatus("idle");
+        }
       } else {
         setErrorMessage(data.message || "দুঃখিত, এআই সার্ভার থেকে কোনো উত্তর পাওয়া যায়নি।");
         setStatus("idle");
@@ -454,7 +459,7 @@ export default function VoiceAssistant() {
               <Sparkles className="w-5 h-5 animate-pulse" />
             </div>
             <div className="text-left">
-              <div className="text-sm font-extrabold text-slate-800 tracking-wide">অ্যারোস্টোন এআই ভয়েস অ্যাসিস্ট্যান্ট</div>
+              <div className="text-sm font-extrabold text-slate-800 tracking-wide">এ্যারোস্টোন এআই ভয়েস অ্যাসিস্ট্যান্ট</div>
               <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">AeroStone Interactive System</div>
             </div>
           </div>
@@ -532,13 +537,39 @@ export default function VoiceAssistant() {
         <div className="lg:col-span-7 space-y-6 flex flex-col justify-center">
           
           <div className="chat-container glass-panel bg-white/80 border-white/40 shadow-xl">
-            <div className="chat-feed-header">
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600">
-                <MessageSquare className="w-4.5 h-4.5" />
+            <div className="chat-feed-header flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+                  <MessageSquare className="w-4.5 h-4.5" />
+                </div>
+                <div>
+                  <div className="text-xs font-extrabold text-slate-800">অ্যাসিস্ট্যান্ট কথোপকথন ফিড</div>
+                  <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">AeroStone Dialogue History</div>
+                </div>
               </div>
-              <div>
-                <div className="text-xs font-extrabold text-slate-800">অ্যাসিস্ট্যান্ট কথোপকথন ফিড</div>
-                <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">AeroStone Dialogue History</div>
+              
+              {/* Voice Readout Toggle Switch */}
+              <div className="flex items-center gap-2 bg-slate-100/60 hover:bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200/50 transition-all shrink-0">
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-wider">ভয়েস রিডআউট</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const nextVal = !voiceEnabled;
+                    setVoiceEnabled(nextVal);
+                    if (!nextVal) {
+                      stopSpeaking();
+                      if (status === "speaking") setStatus("idle");
+                    }
+                  }}
+                  className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 ease-in-out focus:outline-none flex items-center`}
+                  style={{ backgroundColor: voiceEnabled ? '#10b981' : '#cbd5e1' }}
+                >
+                  <div
+                    className={`w-4 h-4 rounded-full bg-white shadow-md transform duration-200 ease-in-out ${
+                      voiceEnabled ? "translate-x-4" : "translate-x-0"
+                    }`}
+                  />
+                </button>
               </div>
             </div>
 
@@ -618,7 +649,7 @@ export default function VoiceAssistant() {
 
       {/* Footer */}
       <footer className="py-6 text-center text-[10px] text-slate-400 font-bold border-t border-slate-200/50 bg-white/50 backdrop-blur-sm relative z-10">
-        © 2026 অ্যারোস্টোন সায়েন্স ফেয়ার অ্যাসিস্ট্যান্ট • যশোর পলিটেকনিক ইনস্টিটিউট
+        © 2026 এ্যারোস্টোন সায়েন্স ফেয়ার অ্যাসিস্ট্যান্ট • যশোর পলিটেকনিক ইনস্টিটিউট
       </footer>
 
     </div>

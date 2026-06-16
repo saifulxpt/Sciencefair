@@ -328,7 +328,7 @@ export default function AdminPanel() {
             </div>
             <div>
               <div className="text-lg font-black tracking-wider text-glow-primary" style={{ color: 'var(--color-primary)' }}>
-                অ্যারোস্টোন কন্ট্রোল প্যানেল
+                এ্যারোস্টোন কন্ট্রোল প্যানেল
               </div>
               <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none mt-0.5">
                 Science Fair 2026 • Live Admin Console
@@ -376,7 +376,7 @@ export default function AdminPanel() {
                   </div>
                   <div className="text-left">
                     <div className="text-xs font-extrabold text-slate-800">মূল প্রজেক্ট ড্যাশবোর্ড (ল্যান্ডিং পেজ)</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">অ্যারোস্টোন সিমুলেশন ও প্রযুক্তিগত তথ্য</div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">এ্যারোস্টোন সিমুলেশন ও প্রযুক্তিগত তথ্য</div>
                   </div>
                 </div>
                 <ArrowUpRight className="w-4 h-4 text-slate-300 group-hover:text-emerald-600 transition-colors" />
@@ -690,7 +690,7 @@ export default function AdminPanel() {
                     সরাসরি স্লাইডে জাম্প করুন (গ্রিড সিলেক্টর)
                   </div>
                   
-                  <div className="grid grid-cols-7 gap-2">
+                  <div className="slide-selector-grid">
                     {Array.from({ length: totalSlides }, (_, i) => i + 1).map((num) => (
                       <button
                         key={num}
@@ -829,7 +829,7 @@ export default function AdminPanel() {
       
       {/* Footer */}
       <footer className="py-6 text-center text-[10px] text-slate-400 font-bold border-t border-slate-200/50 bg-white/50 backdrop-blur-sm relative z-10">
-        © 2026 অ্যারোস্টোন সায়েন্স ফেয়ার অ্যাসিস্ট্যান্ট • যশোর পলিটেকনিক ইনস্টিটিউট
+        © 2026 এ্যারোস্টোন সায়েন্স ফেয়ার অ্যাসিস্ট্যান্ট • যশোর পলিটেকনিক ইনস্টিটিউট
       </footer>
     </div>
   );

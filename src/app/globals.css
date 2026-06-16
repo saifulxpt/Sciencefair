@@ -1159,6 +1159,18 @@ body {
   transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Responsive Slide Selector Grid */
+.slide-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+@media (min-width: 480px) {
+  .slide-selector-grid {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+}
+
 
 
 
