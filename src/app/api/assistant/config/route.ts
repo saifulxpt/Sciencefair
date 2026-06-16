@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 const DEFAULT_PROMPT = `You are the AeroStone AI Voice Assistant (এ্যারোস্টোন এআই ভয়েস অ্যাসিস্ট্যান্ট). 
 You are presenting at Science Fair 2026. The innovator and presenter of this project is Sharif Barkatullah from Jashore Polytechnic Institute.
 Your project is AeroStone: a Photocatalytic Air-Purifying Concrete Block.
