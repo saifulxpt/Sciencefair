@@ -11,8 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      DIRECT_URL: ${{ secrets.DIRECT_URL }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -26,20 +24,19 @@ jobs:
         run: npm ci || npm install
 
       - name: Generate Prisma Client
-        run: |
-          export DATABASE_URL="${DATABASE_URL:-postgresql://dummy:dummy@dummy:5432/dummy}"
-          export DIRECT_URL="${DIRECT_URL:-postgresql://dummy:dummy@dummy:5432/dummy}"
-          if [ -z "$DATABASE_URL" ]; then export DATABASE_URL="postgresql://dummy:dummy@dummy:5432/dummy"; fi
-          npx prisma generate
+        env:
+          DATABASE_URL: "postgresql://dummy:dummy@dummy:5432/dummy"
+          DIRECT_URL: "postgresql://dummy:dummy@dummy:5432/dummy"
+        run: npx prisma generate
 
       - name: Build Application
+        env:
+          DATABASE_URL: "postgresql://dummy:dummy@dummy:5432/dummy"
+          DIRECT_URL: "postgresql://dummy:dummy@dummy:5432/dummy"
         run: |
-          export DATABASE_URL="${DATABASE_URL:-postgresql://dummy:dummy@dummy:5432/dummy}"
-          export DIRECT_URL="${DIRECT_URL:-postgresql://dummy:dummy@dummy:5432/dummy}"
-          if [ -z "$DATABASE_URL" ]; then export DATABASE_URL="postgresql://dummy:dummy@dummy:5432/dummy"; fi
           npm run build
           mkdir -p out_deploy
-          cp -r .next/standalone/* out_deploy/
+          cp -r .next/standalone/. out_deploy/
           cp -r public out_deploy/public
           mkdir -p out_deploy/.next
           cp -r .next/static out_deploy/.next/static
@@ -67,26 +64,26 @@ jobs:
                 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
                 sudo apt-get install -y nodejs
             fi
-            
+
             # Install PM2 if not installed
             if ! command -v pm2 &> /dev/null
             then
                 sudo npm install -g pm2
             fi
-            
+
             cd /var/www/airpurifying-concrete/
-            
+
             # Create .env file from GitHub Secrets
-            echo "DATABASE_URL=\"${{ secrets.DATABASE_URL }}\"" > .env
-            echo "DIRECT_URL=\"${{ secrets.DIRECT_URL }}\"" >> .env
-            
+            echo 'DATABASE_URL="${{ secrets.DATABASE_URL }}"' > .env
+            echo 'DIRECT_URL="${{ secrets.DIRECT_URL }}"' >> .env
+
             # Fix permissions
-            chown -R www-data:www-data /var/www/airpurifying-concrete/
-            chmod -R 775 /var/www/airpurifying-concrete/
-            
+            chown -R www-data:www-data /var/www/airpurifying-concrete/ || true
+            chmod -R 775 /var/www/airpurifying-concrete/ || true
+
             # Start Next.js server on port 3000
-            pm2 restart next-app || pm2 start server.js --name "next-app" --env PORT=3000
+            pm2 restart next-app || pm2 start server.js --name "next-app"
             pm2 save
-            
+
             # Restart Nginx
             sudo systemctl restart nginx
