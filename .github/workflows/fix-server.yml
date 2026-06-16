@@ -7,39 +7,56 @@ jobs:
   fix-server:
     runs-on: ubuntu-latest
     steps:
-      - name: Remove CrewAI and Fix Server
+      - name: Remove CrewAI and Fix Server with SSL
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-            echo "=== 1. KILL ALL PROCESSES ON PORT 8000 (CrewAI) ==="
+            echo "=== 1. STOP ALL DOCKER CONTAINERS (CrewAI, etc.) ==="
+            if command -v docker &> /dev/null; then
+                docker stop $(docker ps -aq) 2>/dev/null || true
+                docker rm $(docker ps -aq) 2>/dev/null || true
+                systemctl stop docker 2>/dev/null || true
+                systemctl disable docker 2>/dev/null || true
+                echo "Docker containers and service stopped and disabled"
+            else
+                echo "Docker not installed"
+            fi
+
+            echo "=== 2. KILL ALL PORT 8000/8001 PROCESSES (CrewAI) ==="
             fuser -k 8000/tcp 2>/dev/null || true
+            fuser -k 8001/tcp 2>/dev/null || true
             pkill -f "crewai" 2>/dev/null || true
             pkill -f "fastapi" 2>/dev/null || true
             pkill -f "uvicorn" 2>/dev/null || true
             pkill -f "crew" 2>/dev/null || true
             echo "CrewAI processes killed"
 
-            echo "=== 2. REMOVE CREWAI FILES ==="
-            rm -rf /root/vps@crewai 2>/dev/null || true
-            rm -rf ~/crewai* 2>/dev/null || true
-            rm -rf /var/www/crewai* 2>/dev/null || true
-            find / -name "crewai*" -maxdepth 5 2>/dev/null | grep -v proc || true
-            echo "CrewAI files removed"
-
-            echo "=== 3. CLEAN PM2 LIST ==="
+            echo "=== 3. CLEAN PM2 PROCESS LIST ==="
             pm2 stop all 2>/dev/null || true
             pm2 delete all 2>/dev/null || true
             echo "PM2 cleared"
 
-            echo "=== 4. WRITE NGINX CONFIG FOR SCIENCE FAIR PROJECT ==="
+            echo "=== 4. INSTALL CERTBOT ==="
+            if ! command -v certbot &> /dev/null; then
+                apt-get update -qq
+                apt-get install -y certbot python3-certbot-nginx
+            fi
+            echo "Certbot check done"
+
+            echo "=== 5. SETUP TEMPORARY HTTP CONFIG FOR SSL CHALLENGE ==="
+            # Remove any existing configuration to start fresh
+            rm -f /etc/nginx/sites-enabled/*
+            rm -f /etc/nginx/sites-available/*
+
             cat > /etc/nginx/sites-available/airpurifying << 'EOF'
 server {
     listen 80;
     listen [::]:80;
-    server_name server.saifulinfo.com 160.25.226.152;
+    server_name server.saifulinfo.com;
+
     location / {
         proxy_pass http://localhost:3000;
         proxy_http_version 1.1;
@@ -53,41 +70,79 @@ server {
     }
 }
 EOF
-            # Remove all other nginx site configs
-            rm -f /etc/nginx/sites-enabled/*
             ln -sf /etc/nginx/sites-available/airpurifying /etc/nginx/sites-enabled/airpurifying
-            echo "Nginx configured for Science Fair project only"
+            nginx -t && systemctl restart nginx
+            echo "Nginx temporary HTTP config running"
 
-            echo "=== 5. WRITE ENV FILE ==="
+            echo "=== 6. GENERATE SSL CERTIFICATE ==="
+            if [ ! -f /etc/letsencrypt/live/server.saifulinfo.com/fullchain.pem ]; then
+                certbot --nginx -d server.saifulinfo.com --non-interactive --agree-tos -m saifulinfo.vps@gmail.com
+            else
+                echo "SSL Certificate already exists, checking renewal"
+                certbot renew --non-interactive
+            fi
+
+            echo "=== 7. WRITE FULL HTTPS NGINX CONFIG ==="
+            cat > /etc/nginx/sites-available/airpurifying << 'EOF'
+server {
+    listen 80;
+    listen [::]:80;
+    server_name server.saifulinfo.com;
+
+    # Redirect all HTTP to HTTPS
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name server.saifulinfo.com;
+
+    ssl_certificate /etc/letsencrypt/live/server.saifulinfo.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/server.saifulinfo.com/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+EOF
+            nginx -t && systemctl restart nginx
+            echo "Nginx updated to HTTPS config"
+
+            echo "=== 8. WRITE ENV FILE ==="
+            mkdir -p /var/www/airpurifying-concrete/
             cat > /var/www/airpurifying-concrete/.env << 'ENVEOF'
 DATABASE_URL="postgresql://postgres.smiewgmpdbitckyjchvt:Brockvai%404200@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
 DIRECT_URL="postgresql://postgres.smiewgmpdbitckyjchvt:Brockvai%404200@aws-1-ap-northeast-1.pooler.supabase.com:5432/postgres"
 ENVEOF
             echo ".env written"
 
-            echo "=== 6. START SCIENCE FAIR PROJECT ==="
+            echo "=== 9. START NEXT.JS APP IN PM2 ==="
             cd /var/www/airpurifying-concrete/
             ls -la
             if [ -f server.js ]; then
                 pm2 start server.js --name "next-app"
                 pm2 save
                 pm2 startup 2>/dev/null || true
-                echo "Next.js started on port 3000"
+                echo "Next.js started on port 3000 under PM2"
             else
-                echo "ERROR: server.js not found. Files:"
-                ls -la
+                echo "ERROR: server.js not found in /var/www/airpurifying-concrete/"
             fi
 
-            echo "=== 7. RESTART NGINX ==="
-            nginx -t 2>&1
-            systemctl restart nginx
-            echo "Nginx restarted"
-
-            echo "=== 8. VERIFY ==="
+            echo "=== 10. VERIFICATION ==="
             sleep 3
             pm2 list
-            curl -s -o /dev/null -w "HTTP localhost:3000 = %{http_code}\n" http://localhost:3000/ || echo "Port 3000 not responding yet"
-            echo "Port 8000 check:"
-            ss -tlnp | grep 8000 || echo "Port 8000 is FREE (CrewAI removed)"
-            echo ""
-            echo "=== DONE! CrewAI removed. Science Fair project running! ==="
+            curl -s -o /dev/null -w "HTTP Localhost:3000 = %{http_code}\n" http://localhost:3000/ || echo "Port 3000 not responding"
+            echo "Done checking ports:"
+            ss -tlnp
+            echo "=== ALL OPERATIONS COMPLETE ==="
