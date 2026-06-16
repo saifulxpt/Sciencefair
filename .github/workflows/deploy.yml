@@ -74,32 +74,48 @@ jobs:
             cd /var/www/airpurifying-concrete/
 
             # Create .env file from GitHub Secrets
-            echo 'DATABASE_URL="${{ secrets.DATABASE_URL }}"' > .env
-            echo 'DIRECT_URL="${{ secrets.DIRECT_URL }}"' >> .env
+            echo "DATABASE_URL=\"${{ secrets.DATABASE_URL }}\"" > .env
+            echo "DIRECT_URL=\"${{ secrets.DIRECT_URL }}\"" >> .env
 
             # Fix permissions
-            chown -R www-data:www-data /var/www/airpurifying-concrete/ || true
-            chmod -R 775 /var/www/airpurifying-concrete/ || true
+            chown -R www-data:www-data /var/www/airpurifying-concrete/ 2>/dev/null || true
+            chmod -R 775 /var/www/airpurifying-concrete/ 2>/dev/null || true
 
-            # Install Certbot if not installed
-            if ! command -v certbot &> /dev/null; then
-                sudo apt-get update -qq
-                sudo apt-get install -y certbot python3-certbot-nginx
-            fi
+            # Copy nginx config (HTTP only for now)
+            cat > /etc/nginx/sites-available/airpurifying-concrete << 'NGINXEOF'
+            server {
+                listen 80;
+                listen [::]:80;
+                server_name server.saifulinfo.com 160.25.226.152;
+                location / {
+                    proxy_pass http://localhost:3000;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection 'upgrade';
+                    proxy_set_header Host $host;
+                    proxy_cache_bypass $http_upgrade;
+                    proxy_set_header X-Real-IP $remote_addr;
+                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto $scheme;
+                }
+            }
+            NGINXEOF
 
-            # Issue SSL certificate if not already issued
-            if [ ! -f /etc/letsencrypt/live/server.saifulinfo.com/fullchain.pem ]; then
-                sudo certbot --nginx -d server.saifulinfo.com --non-interactive --agree-tos -m saifulinfo.vps@gmail.com
-            fi
+            ln -sf /etc/nginx/sites-available/airpurifying-concrete /etc/nginx/sites-enabled/airpurifying-concrete
+            rm -f /etc/nginx/sites-enabled/default
 
-            # Copy nginx config
-            sudo cp /var/www/airpurifying-concrete/nginx-site.conf /etc/nginx/sites-available/airpurifying-concrete
-            sudo ln -sf /etc/nginx/sites-available/airpurifying-concrete /etc/nginx/sites-enabled/airpurifying-concrete
-            sudo rm -f /etc/nginx/sites-enabled/default
-
-            # Test nginx config and restart
-            sudo nginx -t && sudo systemctl restart nginx
-
-            # Start Next.js server on port 3000
-            pm2 restart next-app || pm2 start server.js --name "next-app"
+            # Restart PM2 with new files
+            pm2 stop next-app 2>/dev/null || true
+            pm2 delete next-app 2>/dev/null || true
+            pm2 start server.js --name "next-app"
             pm2 save
+
+            # Restart nginx
+            nginx -t && systemctl restart nginx
+            
+            echo "=== DEPLOYMENT COMPLETE ==="
+            echo "PM2 Status:"
+            pm2 list
+            echo "Files in deploy dir:"
+            ls -la /var/www/airpurifying-concrete/
+
