@@ -2,7 +2,7 @@
 /************************************************************************
  * AeroStone World-Class Admin Dashboard Panel
  * Coordinates slide transitions via Pusher channels and presents
- * real-time voter statistics & AI dialogue transcripts.
+ * real-time voter statistics, session timelines, and AI dialogues.
  * Designed with a high-end glassmorphic visual language, 
  * rotating aurora graphics, and responsive grid panels.
  ************************************************************************/
@@ -27,8 +27,17 @@ import {
   Key,
   Database,
   ArrowUpRight,
-  MessageSquare
+  MessageSquare,
+  Activity,
+  Info
 } from "lucide-react";
+
+interface TimelineEvent {
+  id: string;
+  event: string;
+  time: string;
+  type: "slide" | "vote" | "system";
+}
 
 export default function AdminPanel() {
   const [pin, setPin] = useState("");
@@ -47,6 +56,9 @@ export default function AdminPanel() {
   const [hasKey, setHasKey] = useState(false);
   const [selectedModel, setSelectedModel] = useState("google/gemini-2.5-flash");
   const [systemPrompt, setSystemPrompt] = useState("");
+
+  // Timeline events log stream
+  const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>([]);
 
   // Load configuration details on load
   useEffect(() => {
@@ -87,6 +99,8 @@ export default function AdminPanel() {
       const data = await res.json();
       if (data.status === "success") {
         alert("এআই মডেল এবং কাস্টম ট্রেনিং কনফিগারেশন সফলভাবে সংরক্ষণ করা হয়েছে!");
+        logEvent("এআই মডেল এবং কাস্টম ট্রেনিং আপডেট করা হয়েছে।", "system");
+        
         // Refresh key status
         const resConfig = await fetch("/api/assistant.php?action=get_config");
         const dataConfig = await resConfig.json();
@@ -166,6 +180,43 @@ export default function AdminPanel() {
     };
   }, [isConnected, pin]);
 
+  // Log events to dashboard timeline helper
+  const logEvent = (msg: string, type: "slide" | "vote" | "system") => {
+    setTimelineEvents(prev => [
+      {
+        id: Math.random().toString(),
+        event: msg,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+        type
+      },
+      ...prev
+    ].slice(0, 10));
+  };
+
+  // Trigger event timeline logs on session triggers
+  useEffect(() => {
+    if (isConnected) {
+      logEvent(`প্রেজেন্টেশন স্লাইড ${currentSlide} এ পরিবর্তন করা হয়েছে।`, "slide");
+    }
+  }, [currentSlide]);
+
+  const totalVotes = votes.yes + votes.no;
+  const approvalRate = totalVotes > 0 ? Math.round((votes.yes / totalVotes) * 100) : 0;
+
+  useEffect(() => {
+    if (totalVotes > 0) {
+      logEvent(`নতুন মতামত ভোট জমা হয়েছে। মোট ভোট: ${totalVotes}টি।`, "vote");
+    }
+  }, [totalVotes]);
+
+  useEffect(() => {
+    if (isConnected) {
+      logEvent(`প্রেসিডেন্ট রুম পিন ${pin} দিয়ে সংযুক্ত হয়েছে।`, "system");
+    } else {
+      setTimelineEvents([]);
+    }
+  }, [isConnected]);
+
   const sendCommand = async (action: string, slideNum: number | null = null, extra: any = {}) => {
     if (!pin) return;
     try {
@@ -205,6 +256,7 @@ export default function AdminPanel() {
       const result = await res.json();
       if (result.status === "success") {
         setVotes({ yes: 0, no: 0, feed: [] });
+        logEvent("ডাটাবেজের সকল লাইভ ভোট সফলভাবে রিসেট করা হয়েছে।", "system");
         alert("ভোট ডেটা সফলভাবে মুছে ফেলা হয়েছে।");
       }
     } catch (e) {
@@ -238,8 +290,24 @@ export default function AdminPanel() {
     }
   };
 
-  const totalVotes = votes.yes + votes.no;
-  const approvalRate = totalVotes > 0 ? Math.round((votes.yes / totalVotes) * 100) : 0;
+  const getSlideInfo = (slideNum: number) => {
+    switch (slideNum) {
+      case 1: return { title: "প্রজেক্ট পরিচিতি", desc: "AeroStone ৩D মডেল ও মেলা পরিচিতি" };
+      case 2: return { title: "সমস্যা ও উদ্দেশ্য", desc: "ঢাকার বায়ুদূষণ ও ক্ষতিকর NOx গ্যাসের বিস্তার" };
+      case 3: return { title: "সমাধান সূত্র", desc: "ফটোক্যাটালাইটিক কংক্রিট ব্লকের passive বায়ু ফিল্টারিং" };
+      case 4: return { title: "মিশ্রণ ও অনুপাত", desc: "Aggregate, সিমেন্ট ও TiO₂ ফটোক্যাটালিস্টের সঠিক অনুপাত" };
+      case 5: return { title: "ফটোক্যাটালাইসিস থিওরি", desc: "সূর্যালোকের UV রশির প্রভাবে ইলেকট্রন হোল এক্সাইটেশন" };
+      case 6: return { title: "লাইভ সিমুলেশন", desc: "কণা ও র্যাডিক্যাল রিঅ্যাকশনের ৩D অ্যানিমেটেড ভিউ" };
+      case 7: return { title: "নাইট্রেট রূপান্তর", desc: "দূষণমুক্ত উপাদানের রূপান্তর ও বৃষ্টিতে ধুয়ে অপসারণ" };
+      case 8: return { title: "ল্যাব পরীক্ষার ফলাফল", desc: "৩৫ মিনিটে ৮০% NOx হ্রাসকরণের বিজ্ঞান মেলা প্রমাণ" };
+      case 9: return { title: "ইমপ্যাক্ট ক্যালকুলেটর", desc: "লাইভ বায়ু পরিশোধন ও বৃক্ষ রোপণের গাণিতিক তুলনা" };
+      case 10: return { title: "বাণিজ্যিক সুবিধা", desc: "sidewalks, pavements ও dividers এ passive ব্যবহার" };
+      case 11: return { title: "জনমত মতামত পোল", desc: "দর্শকদের মতামত ভোট প্রদর্শনী বার গ্রাফ" };
+      case 12: return { title: "ভবিষ্যত পরিকল্পনা", desc: "পাবলিক sidewalks এ ব্যাপক উৎপাদন ও বাস্তবায়নের উপায়" };
+      case 13: return { title: "উপসংহার ও বিদায়", desc: "প্রজেক্ট সমাপ্তি এবং বিচারকদের ধন্যবাদ জ্ঞাপন" };
+      default: return { title: "প্রশ্নোত্তর সেশন", desc: "বিচারকদের কারিগরি প্রশ্নের প্রশ্নোত্তর আলোচনা" };
+    }
+  };
 
   return (
     <div 
@@ -271,7 +339,7 @@ export default function AdminPanel() {
             <a 
               href="/assistant" 
               target="_blank"
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-purple-600 to-indigo-650 hover:from-purple-500 hover:to-indigo-550 text-white font-bold text-xs rounded-xl transition-all shadow-md hover:shadow-purple-500/20 mr-1.5 cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-purple-600 to-indigo-650 hover:from-purple-500 hover:to-indigo-555 text-white font-bold text-xs rounded-xl transition-all shadow-md hover:shadow-purple-500/20 mr-1.5 cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5 animate-pulse" /> ভয়েস অ্যাসিস্ট্যান্ট পেজ
             </a>
@@ -285,7 +353,7 @@ export default function AdminPanel() {
       {/* Main Layout */}
       <main className="flex-grow max-w-7xl w-full mx-auto px-4 md:px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10">
         
-        {/* Left Column: Navigation, Keys, and Voting DB Management */}
+        {/* Left Column: Shortcuts, Configuration Settings, and Live Graph Gauge */}
         <div className="lg:col-span-5 space-y-6 flex flex-col">
           
           {/* Section 1: Navigation Shortcuts */}
@@ -418,29 +486,67 @@ export default function AdminPanel() {
             </div>
           </div>
 
-          {/* Section 3: Live Poll & Database Management */}
+          {/* Section 3: Live SVG Doughnut Chart Progress & Database Management */}
           <div className="glass-panel p-6 bg-white/80 border-white/40 shadow-lg">
             <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-2 border-b border-slate-100 pb-2.5">
               <div className="w-6.5 h-6.5 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0">
                 <Database className="w-4 h-4" />
               </div>
-              লাইভ মতামত ডাটা কন্ট্রোলার
+              লাইভ মতামত ডাটা ও পরিসংখ্যান
             </h2>
             
-            {/* Stats Cards Row */}
-            <div className="grid grid-cols-2 gap-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-200/70 shadow-inner">
-              <div className="text-center">
-                <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider">মোট সংগৃহীত ভোট</div>
-                <div className="text-3xl font-black text-slate-800 mt-1">{totalVotes} <span className="text-sm font-bold text-slate-400">টি</span></div>
+            {/* SVG Doughnut Circle Gauge Widget */}
+            <div className="flex items-center gap-6 bg-slate-50/50 p-4 rounded-2xl border border-slate-200/70 shadow-inner mb-4">
+              <div className="relative w-24 h-24 flex items-center justify-center shrink-0">
+                <svg className="w-full h-full transform -rotate-90">
+                  <circle
+                    cx="48"
+                    cy="48"
+                    r="40"
+                    className="text-slate-200"
+                    strokeWidth="8"
+                    stroke="currentColor"
+                    fill="transparent"
+                  />
+                  <circle
+                    cx="48"
+                    cy="48"
+                    r="40"
+                    className="text-emerald-500 svg-gauge-ring"
+                    strokeWidth="8"
+                    strokeDasharray={2 * Math.PI * 40}
+                    strokeDashoffset={2 * Math.PI * 40 - (approvalRate / 100) * (2 * Math.PI * 40)}
+                    strokeLinecap="round"
+                    stroke="currentColor"
+                    fill="transparent"
+                  />
+                </svg>
+                <div className="absolute text-center">
+                  <span className="text-xl font-black text-slate-800 leading-none">{approvalRate}%</span>
+                  <span className="block text-[8px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">সমর্থন</span>
+                </div>
               </div>
-              <div className="text-center border-l border-slate-200">
-                <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider">জনপ্রিয়তা হার</div>
-                <div className="text-3xl font-black text-emerald-600 mt-1">{approvalRate}%</div>
+              
+              <div className="flex-grow space-y-2 text-xs font-bold">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500 font-semibold">হ্যাঁ (Yes):</span>
+                  <span className="text-emerald-600">{votes.yes} ভোট ({totalVotes > 0 ? Math.round(votes.yes/totalVotes*100) : 0}%)</span>
+                </div>
+                <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                  <div className="bg-emerald-500 h-full rounded-full transition-all duration-500" style={{ width: `${totalVotes > 0 ? (votes.yes/totalVotes*100) : 0}%` }} />
+                </div>
+                
+                <div className="flex justify-between items-center pt-1">
+                  <span className="text-slate-500 font-semibold">না (No):</span>
+                  <span className="text-rose-600">{votes.no} ভোট ({totalVotes > 0 ? Math.round(votes.no/totalVotes*100) : 0}%)</span>
+                </div>
+                <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                  <div className="bg-rose-500 h-full rounded-full transition-all duration-500" style={{ width: `${totalVotes > 0 ? (votes.no/totalVotes*100) : 0}%` }} />
+                </div>
               </div>
             </div>
 
             <div className="space-y-4 pt-2">
-              {/* Reset votes button */}
               <button 
                 onClick={resetVotes}
                 disabled={resetting}
@@ -452,7 +558,6 @@ export default function AdminPanel() {
 
               <hr className="border-slate-100" />
 
-              {/* Inject mock votes */}
               <div className="space-y-2.5">
                 <div className="text-xs font-black text-slate-500 uppercase tracking-wider">টেস্ট ভোট ইনজেক্ট (সিমুলেশন)</div>
                 <div className="flex gap-2">
@@ -484,7 +589,7 @@ export default function AdminPanel() {
 
         </div>
 
-        {/* Right Column: Slide Control Deck & Conversation Logger feeds */}
+        {/* Right Column: Slide Control Deck, Live Timeline & Dialogue Transcripts */}
         <div className="lg:col-span-7 space-y-6 flex flex-col">
           
           {/* Main Slide controller card */}
@@ -539,6 +644,18 @@ export default function AdminPanel() {
                   >
                     সংযোগ বিচ্ছিন্ন করুন
                   </button>
+                </div>
+
+                {/* Live Slide Preview Telemetry Card */}
+                <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-200/70 shadow-inner flex items-start gap-3.5">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0">
+                    <Info className="w-5 h-5 animate-pulse" />
+                  </div>
+                  <div className="text-xs">
+                    <div className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">প্রদর্শনী স্লাইড টেলিমেট্রি (Active Preview)</div>
+                    <div className="font-extrabold text-slate-800 mt-0.5 text-sm">স্লাইড {currentSlide}: {getSlideInfo(currentSlide).title}</div>
+                    <div className="text-slate-500 font-semibold mt-0.5 leading-relaxed">{getSlideInfo(currentSlide).desc}</div>
+                  </div>
                 </div>
 
                 {/* Autoplay Remote Settings */}
@@ -621,6 +738,28 @@ export default function AdminPanel() {
                       <Sparkles className="w-4 h-4 text-emerald-600" />
                     </button>
                   </div>
+                </div>
+
+                {/* Session Timeline Event Logs */}
+                <div className="glass-panel p-5 bg-white/80 border-slate-200/50 shadow-md">
+                  <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1">
+                    <Activity className="w-4.5 h-4.5 text-emerald-500 animate-pulse" /> সেশন এক্টিভিটি টাইমলাইন (Live timeline)
+                  </div>
+                  {timelineEvents.length === 0 ? (
+                    <div className="text-center text-xs text-slate-400 py-4 font-semibold">কোনো একটিভিটি রেকর্ড হয়নি। স্লাইড পরিবর্তন করুন।</div>
+                  ) : (
+                    <div className="timeline-container">
+                      {timelineEvents.map((ev) => (
+                        <div key={ev.id} className="timeline-item text-xs font-semibold text-slate-600">
+                          <div className={`timeline-dot ${ev.type === "slide" ? "cyan" : ev.type === "system" ? "purple" : ""}`} />
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-800">{ev.event}</span>
+                            <span className="text-[10px] text-slate-400 font-mono font-bold">{ev.time}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
               </div>

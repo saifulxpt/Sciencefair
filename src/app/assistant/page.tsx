@@ -1,10 +1,10 @@
 "use client";
 /************************************************************************
  * AeroStone World-Class Bangla AI Voice Assistant
- * Displays scrolling chat bubbles, custom audio wave visualizers,
- * and handles fallbacks like direct text input and preset questions.
- * Includes a premium light theme layout with glassmorphic cards, 
- * rotating holographic rings, and aurora glow background details.
+ * Incorporates a real-time Web Audio API Canvas Visualizer
+ * that reacts to microphone input and features Siri-style animated waves
+ * during voice reply playbacks.
+ * Designed with a premium glassmorphic visual language and aurora gradients.
  ************************************************************************/
 
 import React, { useState, useEffect, useRef } from "react";
@@ -30,6 +30,14 @@ type Message = {
 
 type AssistantStatus = "idle" | "listening" | "processing" | "speaking";
 
+const sampleQuestions = [
+  "অ্যারোস্টোন প্রজেক্টটি কী এবং এটি কীভাবে কাজ করে?",
+  "এই ব্লকের উপাদানসমূহ ও মিক্স রেশিও কী?",
+  "ফটোক্যাটালাইসিস কেমিক্যাল রিঅ্যাকশন সম্পর্কে বলুন।",
+  "অ্যারোস্টোন ব্লক কতটুকু দূষণ কমাতে পারে?",
+  "এরকম সায়েন্টিফিক ব্লক ব্যবহারে কী খরচ বাড়বে?"
+];
+
 export default function VoiceAssistant() {
   const [status, setStatus] = useState<AssistantStatus>("idle");
   const [inputText, setInputText] = useState("");
@@ -42,9 +50,15 @@ export default function VoiceAssistant() {
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
+  // Canvas & Web Audio references
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const animationRef = useRef<number | null>(null);
+
   // Initialize Welcome Message, Speech Recognition & Synthesis on mount
   useEffect(() => {
-    // Welcome message
     setChatHistory([
       {
         sender: "ai",
@@ -53,13 +67,12 @@ export default function VoiceAssistant() {
     ]);
 
     if (typeof window !== "undefined") {
-      // 1. Speech Recognition Setup
       const SpeechRecognition = 
         (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       
       if (SpeechRecognition) {
         const rec = new SpeechRecognition();
-        rec.lang = "bn-BD"; // Bangla voice input language
+        rec.lang = "bn-BD";
         rec.interimResults = false;
         rec.maxAlternatives = 1;
         
@@ -94,39 +107,234 @@ export default function VoiceAssistant() {
         setErrorMessage("আপনার ব্রাউজারে স্পিচ রিকগনিশন সাপোর্ট করে না। ক্রোম ব্রাউজার ব্যবহার করুন।");
       }
 
-      // 2. Speech Synthesis Setup
       synthRef.current = window.speechSynthesis;
     }
 
     return () => {
       stopSpeaking();
+      stopAudioVisualizer();
     };
   }, []);
 
-  // Scroll to bottom of conversation feed on change
+  // Web Audio Visualizer Setup & Loop trigger
+  useEffect(() => {
+    if (status === "listening") {
+      startMicVisualizer();
+    } else {
+      stopAudioVisualizer();
+      renderCanvasLoop(status);
+    }
+    return () => stopAudioVisualizer();
+  }, [status]);
+
+  // Scroll to bottom of conversation feed
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatHistory]);
 
-  // Stop speaking logic
+  // Start Web Audio API visualizer using microphone data
+  const startMicVisualizer = async () => {
+    stopAudioVisualizer();
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+
+      const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+      const audioCtx = new AudioContextClass();
+      audioContextRef.current = audioCtx;
+
+      const analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+      analyserRef.current = analyser;
+
+      const source = audioCtx.createMediaStreamSource(stream);
+      source.connect(analyser);
+
+      renderCanvasLoop("listening");
+    } catch (e) {
+      console.warn("Microphone access failed for visualizer, falling back to simulation:", e);
+      renderCanvasLoop("listening", true);
+    }
+  };
+
+  // Stop visualizer and clear audio contexts
+  const stopAudioVisualizer = () => {
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+    if (audioContextRef.current && audioContextRef.current.state !== "closed") {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
+    }
+    analyserRef.current = null;
+  };
+
+  // Main Canvas Rendering Engine
+  const renderCanvasLoop = (currentStatus: AssistantStatus, simulateListening = false) => {
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    // Set canvas dimensions
+    const width = canvas.offsetWidth;
+    const height = canvas.offsetHeight;
+    canvas.width = width;
+    canvas.height = height;
+
+    let phase = 0;
+
+    const draw = () => {
+      if (!canvasRef.current || !ctx) return;
+      const w = canvasRef.current.width;
+      const h = canvasRef.current.height;
+      ctx.clearRect(0, 0, w, h);
+
+      if (currentStatus === "listening") {
+        if (analyserRef.current && !simulateListening) {
+          // Real Mic Frequencies
+          const analyser = analyserRef.current;
+          const bufferLength = analyser.frequencyBinCount;
+          const dataArray = new Uint8Array(bufferLength);
+          analyser.getByteFrequencyData(dataArray);
+
+          const barWidth = (w / bufferLength) * 1.5;
+          let x = 0;
+
+          // Draw neon glowing frequency bars mirrored
+          for (let i = 0; i < bufferLength; i++) {
+            const barHeight = (dataArray[i] / 255) * h * 0.85 + 2;
+
+            const gradient = ctx.createLinearGradient(0, h, 0, 0);
+            gradient.addColorStop(0, "rgba(16, 185, 129, 0.15)");
+            gradient.addColorStop(0.5, "rgba(16, 185, 129, 0.7)");
+            gradient.addColorStop(1, "rgba(2, 132, 199, 0.95)");
+
+            ctx.fillStyle = gradient;
+            ctx.shadowColor = "rgba(16, 185, 129, 0.4)";
+            ctx.shadowBlur = 8;
+
+            const drawY = h / 2 - barHeight / 2;
+            ctx.beginPath();
+            ctx.roundRect(x, drawY, barWidth - 3, barHeight, 4);
+            ctx.fill();
+
+            x += barWidth;
+          }
+        } else {
+          // Simulated Mic Waves
+          phase += 0.15;
+          ctx.beginPath();
+          ctx.lineWidth = 3;
+          ctx.strokeStyle = "rgba(16, 185, 129, 0.75)";
+          ctx.shadowColor = "rgba(16, 185, 129, 0.5)";
+          ctx.shadowBlur = 10;
+
+          for (let x = 0; x < w; x++) {
+            const amplitude = 15 + Math.sin(phase * 0.2) * 10;
+            const y = h / 2 + Math.sin(x * 0.05 + phase) * amplitude;
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+        }
+      } 
+      else if (currentStatus === "speaking") {
+        // Siri-Style fluid multi-sine-waves
+        phase += 0.2;
+        ctx.shadowBlur = 4;
+
+        const waves = [
+          { amp: 22, freq: 0.015, color: "rgba(16, 185, 129, 0.65)", speed: 0.07 },
+          { amp: 16, freq: 0.025, color: "rgba(2, 132, 199, 0.65)", speed: -0.04 },
+          { amp: 10, freq: 0.035, color: "rgba(139, 92, 246, 0.5)", speed: 0.09 }
+        ];
+
+        waves.forEach((wave) => {
+          ctx.beginPath();
+          ctx.lineWidth = 2.5;
+          ctx.strokeStyle = wave.color;
+          ctx.shadowColor = wave.color;
+
+          for (let x = 0; x < w; x++) {
+            const y = h / 2 + Math.sin(x * wave.freq + phase * wave.speed) * wave.amp;
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+        });
+      } 
+      else if (currentStatus === "processing") {
+        // Sweeping light beams or particles
+        phase += 0.08;
+        ctx.shadowBlur = 12;
+        ctx.strokeStyle = "rgba(139, 92, 246, 0.65)";
+        ctx.shadowColor = "rgba(139, 92, 246, 0.4)";
+        ctx.lineWidth = 2.5;
+
+        const count = 4;
+        const maxRadius = Math.min(w, h) * 0.35;
+        const center = w / 2;
+
+        for (let i = 0; i < count; i++) {
+          const t = ((phase + i / count) % 1);
+          const radius = t * maxRadius;
+          ctx.beginPath();
+          ctx.arc(center, h / 2, radius, 0, Math.PI * 2);
+          ctx.globalAlpha = 1 - t;
+          ctx.stroke();
+        }
+        ctx.globalAlpha = 1.0;
+      } 
+      else {
+        // Idle calming flat-breathing center line
+        phase += 0.03;
+        ctx.beginPath();
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = "rgba(16, 185, 129, 0.35)";
+        ctx.shadowColor = "rgba(16, 185, 129, 0.2)";
+        ctx.shadowBlur = 6;
+
+        for (let x = 0; x < w; x++) {
+          const y = h / 2 + Math.sin(x * 0.01 + phase) * 2.5;
+          if (x === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      }
+
+      // Keep animation looping
+      animationRef.current = requestAnimationFrame(draw);
+    };
+
+    draw();
+  };
+
+  // Stop speaking
   const stopSpeaking = () => {
     if (synthRef.current) {
       synthRef.current.cancel();
     }
   };
 
-  // Speak AI reply in Bangla
+  // Speak text output
   const speakText = (text: string) => {
     stopSpeaking();
     if (isMuted || !synthRef.current) return;
     
-    // Clear any markdown/formatting symbols
     const cleanedText = text.replace(/[*#_\-`]/g, "");
-    
     const utterance = new SpeechSynthesisUtterance(cleanedText);
-    utterance.lang = "bn-BD"; // Bangla voice readout
+    utterance.lang = "bn-BD";
     
-    // Try to find native Bangla voice if available
     const voices = synthRef.current.getVoices();
     const bnVoice = voices.find(v => v.lang.includes("bn-BD") || v.lang.includes("bn-IN"));
     if (bnVoice) {
@@ -151,14 +359,13 @@ export default function VoiceAssistant() {
       try {
         recognition?.start();
       } catch (e) {
-        // In case recognition is already running
         recognition?.stop();
         setTimeout(() => recognition?.start(), 100);
       }
     }
   };
 
-  // Ask AI endpoint
+  // Query API endpoint
   const askAI = async (query: string, alreadyAppended = false) => {
     setStatus("processing");
     setErrorMessage("");
@@ -169,7 +376,6 @@ export default function VoiceAssistant() {
       setChatHistory(currentHistory);
     }
     
-    // Pass the last 6 messages as chat history context (excluding the active query)
     const historyPayload = currentHistory.slice(0, -1).slice(-6);
     
     try {
@@ -198,7 +404,6 @@ export default function VoiceAssistant() {
     }
   };
 
-  // Text submit handler
   const handleTextSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputText.trim() || status === "processing") return;
@@ -208,14 +413,12 @@ export default function VoiceAssistant() {
     askAI(query, false);
   };
 
-  // Sample questions click handler
   const handleSampleClick = (question: string) => {
     stopSpeaking();
     setChatHistory((prev) => [...prev, { sender: "user", text: question }]);
     askAI(question, true);
   };
 
-  // Status message in Bangla
   const getStatusMessage = () => {
     switch (status) {
       case "listening":
@@ -229,14 +432,6 @@ export default function VoiceAssistant() {
     }
   };
 
-  const sampleQuestions = [
-    "অ্যারোস্টোন প্রজেক্টটি কী এবং এটি কীভাবে কাজ করে?",
-    "এই ব্লকের উপাদানসমূহ ও মিক্স রেশিও কী?",
-    "ফটোক্যাটালাইসিস কেমিক্যাল রিঅ্যাকশন সম্পর্কে বলুন।",
-    "অ্যারোস্টোন ব্লক কতটুকু দূষণ কমাতে পারে?",
-    "এরকম সায়েন্টিফিক ব্লক ব্যবহারে কী খরচ বাড়বে?"
-  ];
-
   return (
     <div 
       className="min-h-screen flex flex-col aurora-bg select-none"
@@ -247,7 +442,7 @@ export default function VoiceAssistant() {
       <div className="aurora-orb aurora-orb-2" />
       <div className="aurora-orb aurora-orb-3" />
 
-      {/* Header Overlay */}
+      {/* Header */}
       <header className="glass-panel sticky top-0 z-50 px-6 py-4 rounded-none border-t-0 border-x-0 border-b bg-white/70 shadow-sm backdrop-blur-md">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <a href="/admin" className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors">
@@ -264,7 +459,6 @@ export default function VoiceAssistant() {
             </div>
           </div>
 
-          {/* Sound Mute Toggle */}
           <button 
             onClick={() => {
               const nextMuted = !isMuted;
@@ -286,19 +480,18 @@ export default function VoiceAssistant() {
         </div>
       </header>
 
-      {/* Main Content View */}
+      {/* Main Content */}
       <main className="flex-grow max-w-6xl w-full mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
         
-        {/* Left: Concentric Rotating Holographic Voice Orb & Wave */}
-        <div className="lg:col-span-5 flex flex-col items-center justify-center space-y-6 py-4">
+        {/* Left: Holographic Core & Real-time Canvas Wave */}
+        <div className="lg:col-span-5 flex flex-col items-center justify-center space-y-8 py-4">
           
+          {/* Concentric rotating elements */}
           <div className={`holo-orb-container ${status}`}>
-            {/* Concentric outer rotating rings */}
             <div className="holo-ring-outer" />
             <div className="holo-ring-middle" />
             <div className="holo-ring-inner" />
             
-            {/* Main pulsing core button */}
             <button
               onClick={toggleListening}
               disabled={status === "processing"}
@@ -316,27 +509,18 @@ export default function VoiceAssistant() {
             </button>
           </div>
 
-          {/* Prompt Message and status */}
-          <div className="text-center space-y-1">
+          <div className="text-center space-y-1.5">
             <div className="text-sm font-extrabold text-slate-800 tracking-wide">{getStatusMessage()}</div>
             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
-              {status === "listening" ? "Listening..." : status === "processing" ? "Processing..." : status === "speaking" ? "Speaking..." : "Tap to Ask"}
+              {status === "listening" ? "Listening..." : status === "processing" ? "Processing..." : status === "speaking" ? "Speaking..." : "Tap Core to Ask"}
             </div>
           </div>
 
-          {/* Interactive Fluid Audio Wave */}
-          <div className={`audio-wave-container ${status === "listening" ? "listening" : ""} ${status === "speaking" ? "speaking" : ""}`}>
-            <div className="audio-wave-bar" style={{ height: status !== "idle" && status !== "processing" ? undefined : "6px" }} />
-            <div className="audio-wave-bar" style={{ height: status !== "idle" && status !== "processing" ? undefined : "12px" }} />
-            <div className="audio-wave-bar" style={{ height: status !== "idle" && status !== "processing" ? undefined : "8px" }} />
-            <div className="audio-wave-bar" style={{ height: status !== "idle" && status !== "processing" ? undefined : "14px" }} />
-            <div className="audio-wave-bar" style={{ height: status !== "idle" && status !== "processing" ? undefined : "10px" }} />
-            <div className="audio-wave-bar" style={{ height: status !== "idle" && status !== "processing" ? undefined : "12px" }} />
-            <div className="audio-wave-bar" style={{ height: status !== "idle" && status !== "processing" ? undefined : "6px" }} />
-            <div className="audio-wave-bar" style={{ height: status !== "idle" && status !== "processing" ? undefined : "8px" }} />
+          {/* HTML5 Canvas visualizer container */}
+          <div className="canvas-visualizer-container w-full max-w-sm">
+            <canvas ref={canvasRef} className="canvas-visualizer" />
           </div>
 
-          {/* Speech error indicator */}
           {errorMessage && (
             <div className="bg-rose-50 border border-rose-100 rounded-xl px-4 py-2.5 text-xs font-semibold text-rose-500 max-w-sm text-center shadow-sm">
               {errorMessage}
@@ -344,12 +528,10 @@ export default function VoiceAssistant() {
           )}
         </div>
 
-        {/* Right: Dialogue Box Chat Feed and Preset Questions */}
+        {/* Right: Dialogue Box Chat Feed */}
         <div className="lg:col-span-7 space-y-6 flex flex-col justify-center">
           
-          {/* Conversation chat-container */}
           <div className="chat-container glass-panel bg-white/80 border-white/40 shadow-xl">
-            {/* Header of Feed */}
             <div className="chat-feed-header">
               <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600">
                 <MessageSquare className="w-4.5 h-4.5" />
@@ -360,7 +542,6 @@ export default function VoiceAssistant() {
               </div>
             </div>
 
-            {/* Scrollable feed */}
             <div className="chat-feed scrollbar-thin">
               {chatHistory.map((msg, index) => (
                 <div 
@@ -387,7 +568,6 @@ export default function VoiceAssistant() {
               <div ref={chatEndRef} />
             </div>
 
-            {/* Bottom Keyboard Text Input Bar */}
             <form onSubmit={handleTextSubmit} className="chat-input-container bg-white/95">
               <input
                 type="text"
@@ -408,7 +588,7 @@ export default function VoiceAssistant() {
             </form>
           </div>
 
-          {/* Preset Sample Questions */}
+          {/* Preset Questions */}
           <div className="glass-panel p-6 bg-white/80 shadow-lg border-emerald-500/10">
             <div className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2.5">
               <HelpCircle className="w-4.5 h-4.5 text-emerald-500" /> সচরাচর জিজ্ঞাসিত প্রশ্নসমূহ
@@ -436,7 +616,7 @@ export default function VoiceAssistant() {
 
       </main>
 
-      {/* Footer Info */}
+      {/* Footer */}
       <footer className="py-6 text-center text-[10px] text-slate-400 font-bold border-t border-slate-200/50 bg-white/50 backdrop-blur-sm relative z-10">
         © 2026 অ্যারোস্টোন সায়েন্স ফেয়ার অ্যাসিস্ট্যান্ট • যশোর পলিটেকনিক ইনস্টিটিউট
       </footer>
