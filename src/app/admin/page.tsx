@@ -45,39 +45,59 @@ export default function AdminPanel() {
   const [injectName, setInjectName] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [hasKey, setHasKey] = useState(false);
+  const [selectedModel, setSelectedModel] = useState("google/gemini-2.5-flash");
+  const [systemPrompt, setSystemPrompt] = useState("");
 
-  // Check if OpenRouter key is set on load
+  // Load configuration details on load
   useEffect(() => {
-    const checkKey = async () => {
+    const fetchConfig = async () => {
       try {
-        const res = await fetch("/api/assistant.php?action=has_key");
+        const res = await fetch("/api/assistant.php?action=get_config");
         const data = await res.json();
         if (data.status === "success") {
           setHasKey(data.has_key);
+          if (data.masked_key) {
+            setApiKey(data.masked_key);
+          }
+          if (data.model) {
+            setSelectedModel(data.model);
+          }
+          if (data.system_prompt) {
+            setSystemPrompt(data.system_prompt);
+          }
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error("Failed to load configs", e);
+      }
     };
-    checkKey();
+    fetchConfig();
   }, []);
 
-  const saveKey = async () => {
-    if (!apiKey.trim()) {
-      alert("দয়া করে একটি বৈধ ওপেনরাউটার কী লিখুন।");
-      return;
-    }
+  const saveConfigSettings = async () => {
     try {
-      const res = await fetch("/api/assistant.php?action=set_key", {
+      const res = await fetch("/api/assistant.php?action=save_config", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key: apiKey })
+        body: JSON.stringify({ 
+          key: apiKey,
+          model: selectedModel,
+          prompt: systemPrompt
+        })
       });
       const data = await res.json();
       if (data.status === "success") {
-        setHasKey(true);
-        setApiKey("");
-        alert("ওপেনরাউটার এপিআই কী সফলভাবে সংরক্ষণ করা হয়েছে!");
+        alert("এআই মডেল এবং কাস্টম ট্রেনিং কনফিগারেশন সফলভাবে সংরক্ষণ করা হয়েছে!");
+        // Refresh key status
+        const resConfig = await fetch("/api/assistant.php?action=get_config");
+        const dataConfig = await resConfig.json();
+        if (dataConfig.status === "success") {
+          setHasKey(dataConfig.has_key);
+          if (dataConfig.masked_key) {
+            setApiKey(dataConfig.masked_key);
+          }
+        }
       } else {
-        alert("কী সংরক্ষণ করা সম্ভব হয়নি।");
+        alert("কনফিগারেশন সংরক্ষণ করা সম্ভব হয়নি।");
       }
     } catch (e) {
       alert("সার্ভার ত্রুটি। দয়া করে আবার চেষ্টা করুন।");
@@ -247,7 +267,14 @@ export default function AdminPanel() {
               </div>
             </div>
           </div>
-          <div>
+          <div className="flex items-center gap-2">
+            <a 
+              href="/assistant" 
+              target="_blank"
+              className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-purple-600 to-indigo-650 hover:from-purple-500 hover:to-indigo-550 text-white font-bold text-xs rounded-xl transition-all shadow-md hover:shadow-purple-500/20 mr-1.5 cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5 animate-pulse" /> ভয়েস অ্যাসিস্ট্যান্ট পেজ
+            </a>
             <div className="text-[10px] font-black uppercase bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 px-3 py-1.5 rounded-full shadow-sm animate-pulse">
               অ্যাডমিন লাইভ সেশন
             </div>
@@ -315,24 +342,22 @@ export default function AdminPanel() {
             </div>
           </div>
 
-          {/* Section 2: OpenRouter API Key Setup */}
-          <div className="glass-panel p-6 bg-white/80 border-white/40 shadow-lg">
+          {/* Section 2: AeroStone AI Training & Settings Console */}
+          <div className="glass-panel p-6 bg-white/80 border-white/40 shadow-lg space-y-4">
             <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-2 border-b border-slate-100 pb-2.5">
               <div className="w-6.5 h-6.5 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0">
-                <Key className="w-4 h-4" />
+                <Sliders className="w-4 h-4" />
               </div>
-              ওপেনরাউটার এপিআই কী সেটআপ
+              এআই মডেল ও ট্রেইনিং কনসোল
             </h2>
-            <p className="text-xs text-slate-500 leading-relaxed mb-3">
-              অ্যাসিস্ট্যান্ট পেজের এআইকে কার্যকর করতে আপনার OpenRouter API Key কনফিগার করুন:
-            </p>
-            
-            <div className="space-y-3">
-              <div className="flex justify-between items-center text-xs">
-                <span className="text-slate-400 font-semibold">কানেকশন স্ট্যাটাস:</span>
+
+            <div className="space-y-3.5 text-xs font-semibold text-slate-600">
+              {/* API Key Connection Status */}
+              <div className="flex justify-between items-center">
+                <span>ওপেনরাউটার এপিআই কী স্ট্যাটাস:</span>
                 {hasKey ? (
                   <span className="bg-emerald-100 text-emerald-700 font-bold px-2.5 py-1 rounded-md flex items-center gap-1.5 shadow-sm">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> এপিআই সক্রিয় আছে
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> এপিআই সক্রিয়
                   </span>
                 ) : (
                   <span className="bg-amber-100 text-amber-700 font-bold px-2.5 py-1 rounded-md flex items-center gap-1.5 animate-pulse shadow-sm">
@@ -341,21 +366,55 @@ export default function AdminPanel() {
                 )}
               </div>
 
-              <div className="space-y-2">
+              {/* API Key Input */}
+              <div className="space-y-1.5">
+                <label className="block text-[11px] text-slate-400 font-bold uppercase tracking-wider">OpenRouter API Key:</label>
                 <input
                   type="password"
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                   placeholder="sk-or-v1-..."
-                  className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl outline-none focus:border-emerald-500 focus:bg-white text-slate-800 transition-all"
+                  className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl outline-none focus:border-emerald-500 focus:bg-white text-slate-800 transition-all font-mono"
                 />
-                <button
-                  onClick={saveKey}
-                  className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-md hover:shadow-emerald-600/25"
-                >
-                  এপিআই কী আপডেট করুন
-                </button>
               </div>
+
+              {/* Model Dropdown Selector */}
+              <div className="space-y-1.5">
+                <label className="block text-[11px] text-slate-400 font-bold uppercase tracking-wider">সক্রিয় এআই মডেল (AI Model):</label>
+                <select
+                  value={selectedModel}
+                  onChange={(e) => setSelectedModel(e.target.value)}
+                  className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl outline-none focus:border-emerald-500 focus:bg-white text-slate-800 transition-all cursor-pointer font-bold animate-fade-in"
+                >
+                  <option value="google/gemini-2.5-flash">Gemini 2.5 Flash (সুপার ফাস্ট, মেলা ডেমো)</option>
+                  <option value="google/gemini-2.5-pro">Gemini 2.5 Pro (জটিল প্রশ্ন ও গভীর ব্যাখ্যা)</option>
+                  <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet (উন্নত বুদ্ধিমত্তা ও কোডিং)</option>
+                  <option value="openai/gpt-4o">GPT-4o (হাই পারফরম্যান্স)</option>
+                  <option value="openai/gpt-4o-mini">GPT-4o Mini (ফাস্ট লাইট মডেল)</option>
+                </select>
+              </div>
+
+              {/* Prompt Training Textarea */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <label className="block text-[11px] text-slate-400 font-bold uppercase tracking-wider">এআই অ্যাসিস্ট্যান্ট নলেজ ট্রেনিং (Prompt):</label>
+                  <span className="text-[10px] text-slate-400 font-normal">এডিটযোগ্য নলেজ বেস</span>
+                </div>
+                <textarea
+                  value={systemPrompt}
+                  onChange={(e) => setSystemPrompt(e.target.value)}
+                  rows={8}
+                  placeholder="এখানে এআই এর সম্পূর্ণ নলেজ ও ডেমো নির্দেশনাগুলো লিখুন..."
+                  className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl outline-none focus:border-emerald-500 focus:bg-white text-slate-800 transition-all font-medium leading-relaxed resize-y scrollbar-thin"
+                />
+              </div>
+
+              <button
+                onClick={saveConfigSettings}
+                className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-md hover:shadow-emerald-600/25 flex items-center justify-center gap-1.5"
+              >
+                <CheckCircle2 className="w-4 h-4" /> কনফিগারেশন ও ট্রেইনিং সেভ করুন
+              </button>
             </div>
           </div>
 

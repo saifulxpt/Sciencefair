@@ -163,15 +163,23 @@ export default function VoiceAssistant() {
     setStatus("processing");
     setErrorMessage("");
     
+    let currentHistory = chatHistory;
     if (!alreadyAppended) {
-      setChatHistory((prev) => [...prev, { sender: "user", text: query }]);
+      currentHistory = [...chatHistory, { sender: "user", text: query }];
+      setChatHistory(currentHistory);
     }
+    
+    // Pass the last 6 messages as chat history context (excluding the active query)
+    const historyPayload = currentHistory.slice(0, -1).slice(-6);
     
     try {
       const res = await fetch("/api/assistant.php?action=ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query })
+        body: JSON.stringify({ 
+          query,
+          history: historyPayload
+        })
       });
       
       const data = await res.json();
