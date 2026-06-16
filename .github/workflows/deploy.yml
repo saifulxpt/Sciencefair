@@ -40,6 +40,8 @@ jobs:
           cp -r public out_deploy/public
           mkdir -p out_deploy/.next
           cp -r .next/static out_deploy/.next/static
+          cp nginx-site.conf out_deploy/
+
 
       - name: Deploy to VPS
         uses: appleboy/scp-action@v0.1.7
