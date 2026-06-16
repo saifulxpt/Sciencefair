@@ -64,7 +64,7 @@ export default function AdminPanel() {
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        const res = await fetch("/api/assistant.php?action=get_config");
+        const res = await fetch("/api/assistant/config");
         const data = await res.json();
         if (data.status === "success") {
           setHasKey(data.has_key);
@@ -87,7 +87,7 @@ export default function AdminPanel() {
 
   const saveConfigSettings = async () => {
     try {
-      const res = await fetch("/api/assistant.php?action=save_config", {
+      const res = await fetch("/api/assistant/config", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
@@ -102,7 +102,7 @@ export default function AdminPanel() {
         logEvent("এআই মডেল এবং কাস্টম ট্রেনিং আপডেট করা হয়েছে।", "system");
         
         // Refresh key status
-        const resConfig = await fetch("/api/assistant.php?action=get_config");
+        const resConfig = await fetch("/api/assistant/config");
         const dataConfig = await resConfig.json();
         if (dataConfig.status === "success") {
           setHasKey(dataConfig.has_key);
@@ -122,7 +122,7 @@ export default function AdminPanel() {
   useEffect(() => {
     const fetchVotes = async () => {
       try {
-        const res = await fetch("/api/vote.php?action=fetch&t=" + Date.now());
+        const res = await fetch("/api/vote/fetch?t=" + Date.now());
         const data = await res.json();
         setVotes(data);
       } catch (e) {
@@ -132,7 +132,7 @@ export default function AdminPanel() {
 
     const fetchAiLogs = async () => {
       try {
-        const res = await fetch("/api/assistant.php?action=fetch_logs&t=" + Date.now());
+        const res = await fetch("/api/assistant/logs?t=" + Date.now());
         const data = await res.json();
         if (data.status === "success") {
           setAiLogs(data.logs);
@@ -220,7 +220,7 @@ export default function AdminPanel() {
   const sendCommand = async (action: string, slideNum: number | null = null, extra: any = {}) => {
     if (!pin) return;
     try {
-      await fetch("/api/pusher.php", {
+      await fetch("/api/pusher", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -252,7 +252,7 @@ export default function AdminPanel() {
     if (!confirm("আপনি কি নিশ্চিতভাবে সকল লাইভ ভোট মুছে দিতে চান? এর ফলে স্লাইডের মতামত গ্রাফ শূন্য হয়ে যাবে।")) return;
     setResetting(true);
     try {
-      const res = await fetch("/api/vote.php?action=reset");
+      const res = await fetch("/api/vote/reset");
       const result = await res.json();
       if (result.status === "success") {
         setVotes({ yes: 0, no: 0, feed: [] });
@@ -270,7 +270,7 @@ export default function AdminPanel() {
     const voterName = injectName.trim() || "ভোটদাতা " + Math.floor(Math.random() * 100);
     setInjecting(true);
     try {
-      const res = await fetch("/api/vote.php?action=vote", {
+      const res = await fetch("/api/vote/vote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: voterName, type })
@@ -279,7 +279,7 @@ export default function AdminPanel() {
       if (result.status === "success") {
         setInjectName("");
         // Re-fetch votes immediately
-        const resFetch = await fetch("/api/vote.php?action=fetch&t=" + Date.now());
+        const resFetch = await fetch("/api/vote/fetch?t=" + Date.now());
         const data = await resFetch.json();
         setVotes(data);
       }

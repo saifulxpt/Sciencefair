@@ -52,7 +52,7 @@ export default function PresenterRemote() {
     }
 
     try {
-      await fetch("/api/pusher.php", {
+      await fetch("/api/pusher", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

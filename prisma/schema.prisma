@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+}
+
+model AiLog {
+  id        Int      @id @default(autoincrement())
+  query     String
+  response  String
+  timestamp DateTime @default(now())
+}
+
+model Vote {
+  id        Int      @id @default(autoincrement())
+  name      String
+  type      String
+  timestamp DateTime @default(now())
+}
+
+model Config {
+  id             Int    @id @default(1)
+  openrouter_key String?
+  selected_model String @default("google/gemini-2.5-flash")
+  system_prompt  String
+}

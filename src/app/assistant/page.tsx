@@ -380,7 +380,7 @@ export default function VoiceAssistant() {
     const historyPayload = currentHistory.slice(0, -1).slice(-6);
     
     try {
-      const res = await fetch("/api/assistant.php?action=ask", {
+      const res = await fetch("/api/assistant/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 

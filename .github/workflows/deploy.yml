@@ -23,35 +23,61 @@ jobs:
       - name: Install Dependencies
         run: npm ci || npm install
 
-      - name: Build Application
-        run: npm run build
+      - name: Generate Prisma Client
+        run: npx prisma generate
 
-      - name: Deploy static files to VPS
+      - name: Build Application
+        run: |
+          npm run build
+          mkdir -p out_deploy
+          cp -r .next/standalone/* out_deploy/
+          cp -r public out_deploy/public
+          mkdir -p out_deploy/.next
+          cp -r .next/static out_deploy/.next/static
+
+      - name: Deploy to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASSWORD }}
-          source: "out/*"
+          source: "out_deploy/*"
           target: "/var/www/airpurifying-concrete/"
           strip_components: 1
 
-      - name: Deploy API files to VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          password: ${{ secrets.SERVER_PASSWORD }}
-          source: "api/*"
-          target: "/var/www/airpurifying-concrete/api/"
-          strip_components: 1
-
-      - name: Set Permissions on Server
+      - name: Set up Server and Start PM2
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
+            # Install Node.js if not installed
+            if ! command -v node &> /dev/null
+            then
+                curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+                sudo apt-get install -y nodejs
+            fi
+            
+            # Install PM2 if not installed
+            if ! command -v pm2 &> /dev/null
+            then
+                sudo npm install -g pm2
+            fi
+            
+            cd /var/www/airpurifying-concrete/
+            
+            # Create .env file from GitHub Secrets
+            echo "DATABASE_URL=\"${{ secrets.DATABASE_URL }}\"" > .env
+            echo "DIRECT_URL=\"${{ secrets.DIRECT_URL }}\"" >> .env
+            
+            # Fix permissions
             chown -R www-data:www-data /var/www/airpurifying-concrete/
             chmod -R 775 /var/www/airpurifying-concrete/
+            
+            # Start Next.js server on port 3000
+            pm2 restart next-app || pm2 start server.js --name "next-app" --env PORT=3000
+            pm2 save
+            
+            # Restart Nginx
+            sudo systemctl restart nginx

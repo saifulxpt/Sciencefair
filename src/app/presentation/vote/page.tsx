@@ -26,7 +26,7 @@ export default function PublicVotePage() {
 
     const fetchVotes = async () => {
       try {
-        const res = await fetch("/api/vote.php?action=fetch&t=" + Date.now());
+        const res = await fetch("/api/vote/fetch?t=" + Date.now());
         const data = await res.json();
         setVotes(data);
       } catch (e) {
@@ -48,7 +48,7 @@ export default function PublicVotePage() {
     setIsSubmitting(true);
 
     try {
-      const res = await fetch("/api/vote.php?action=vote", {
+      const res = await fetch("/api/vote/vote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, type })
