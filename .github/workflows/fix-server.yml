@@ -1,0 +1,83 @@
+name: Fix Server
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fix-server:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH Fix All
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: |
+            echo "=== 1. PM2 STATUS ==="
+            pm2 list || echo "PM2 not found"
+
+            echo "=== 2. FILES IN DEPLOY DIR ==="
+            ls -la /var/www/airpurifying-concrete/ || echo "Dir not found"
+
+            echo "=== 3. NGINX CONFIG ==="
+            ls /etc/nginx/sites-enabled/
+            cat /etc/nginx/sites-enabled/* 2>/dev/null || echo "No nginx config"
+
+            echo "=== 4. KILLING OLD PM2 ==="
+            pm2 stop all 2>/dev/null || true
+            pm2 delete all 2>/dev/null || true
+
+            echo "=== 5. WRITING NGINX CONFIG ==="
+            cat > /etc/nginx/sites-available/airpurifying << 'EOF'
+server {
+    listen 80;
+    listen [::]:80;
+    server_name server.saifulinfo.com 160.25.226.152;
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+EOF
+            ln -sf /etc/nginx/sites-available/airpurifying /etc/nginx/sites-enabled/airpurifying
+            rm -f /etc/nginx/sites-enabled/default
+            rm -f /etc/nginx/sites-enabled/airpurifying-concrete 2>/dev/null || true
+
+            echo "=== 6. WRITING ENV FILE ==="
+            cat > /var/www/airpurifying-concrete/.env << 'ENVEOF'
+DATABASE_URL="postgresql://postgres.smiewgmpdbitckyjchvt:Brockvai%404200@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+DIRECT_URL="postgresql://postgres.smiewgmpdbitckyjchvt:Brockvai%404200@aws-1-ap-northeast-1.pooler.supabase.com:5432/postgres"
+ENVEOF
+
+            echo "=== 7. STARTING PM2 ==="
+            cd /var/www/airpurifying-concrete/
+            if [ -f server.js ]; then
+                pm2 start server.js --name "next-app"
+                pm2 save
+                echo "PM2 started with server.js"
+            else
+                echo "ERROR: server.js not found!"
+                ls -la
+            fi
+
+            echo "=== 8. TESTING NGINX ==="
+            nginx -t 2>&1
+            systemctl restart nginx
+            echo "Nginx restarted"
+
+            echo "=== 9. FINAL STATUS ==="
+            pm2 list
+            systemctl status nginx --no-pager | head -10
+
+            echo "=== 10. TEST HTTP ==="
+            curl -s -o /dev/null -w "HTTP Status: %{http_code}" http://localhost:3000/ || echo "Port 3000 not responding"
+            echo ""
+            echo "=== FIX COMPLETE ==="
