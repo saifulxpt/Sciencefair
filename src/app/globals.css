@@ -838,6 +838,262 @@ body {
   }
 }
 
+/* Aurora Background Orbs */
+.aurora-bg {
+  position: relative;
+  overflow: hidden;
+  background-color: #f8fafc;
+}
+
+.aurora-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(140px);
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.aurora-orb-1 {
+  top: -15%;
+  left: -15%;
+  width: 650px;
+  height: 650px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.18) 0%, transparent 80%);
+}
+
+.aurora-orb-2 {
+  bottom: -20%;
+  right: -20%;
+  width: 750px;
+  height: 750px;
+  background: radial-gradient(circle, rgba(2, 132, 199, 0.18) 0%, transparent 80%);
+}
+
+.aurora-orb-3 {
+  top: 40%;
+  left: 50%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.08) 0%, transparent 80%);
+  transform: translate(-50%, -50%);
+}
+
+/* Concentric Holographic Voice Orb Visualizer */
+.holo-orb-container {
+  position: relative;
+  width: 290px;
+  height: 290px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.holo-ring-outer {
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  border: 2px dashed rgba(16, 185, 129, 0.15);
+  animation: rotateClockwise 35s linear infinite;
+  pointer-events: none;
+  transition: all 0.5s ease;
+}
+
+.holo-ring-middle {
+  position: absolute;
+  width: 235px;
+  height: 235px;
+  border-radius: 50%;
+  border: 2px solid rgba(2, 132, 199, 0.08);
+  border-top-color: rgba(16, 185, 129, 0.3);
+  border-bottom-color: rgba(16, 185, 129, 0.3);
+  animation: rotateCounterClockwise 20s linear infinite;
+  pointer-events: none;
+  transition: all 0.5s ease;
+}
+
+.holo-ring-inner {
+  position: absolute;
+  width: 190px;
+  height: 190px;
+  border-radius: 50%;
+  border: 1px dashed rgba(2, 132, 199, 0.25);
+  animation: rotateClockwise 12s linear infinite;
+  pointer-events: none;
+  transition: all 0.5s ease;
+}
+
+.holo-core-orb {
+  width: 145px;
+  height: 145px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(244, 252, 248, 0.8) 60%, rgba(16, 185, 129, 0.15) 100%);
+  border: 2.5px solid rgba(16, 185, 129, 0.28);
+  box-shadow: 
+    0 10px 30px rgba(16, 185, 129, 0.12), 
+    inset 0 0 20px rgba(16, 185, 129, 0.08),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  z-index: 15;
+}
+
+.holo-core-orb::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.8) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.holo-core-orb:hover {
+  transform: scale(1.05);
+  box-shadow: 
+    0 15px 35px rgba(16, 185, 129, 0.22), 
+    inset 0 0 25px rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.45);
+}
+
+/* Interactive Orb State Customizations */
+.holo-orb-container.listening .holo-ring-outer {
+  border-color: rgba(16, 185, 129, 0.45);
+  animation: rotateClockwise 10s linear infinite;
+  width: 290px;
+  height: 290px;
+}
+
+.holo-orb-container.listening .holo-ring-middle {
+  border-top-color: rgba(16, 185, 129, 0.7);
+  border-bottom-color: rgba(16, 185, 129, 0.7);
+  border-left-color: rgba(2, 132, 199, 0.2);
+  border-right-color: rgba(2, 132, 199, 0.2);
+  animation: rotateCounterClockwise 6s linear infinite;
+}
+
+.holo-orb-container.listening .holo-core-orb {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(220, 252, 231, 0.8) 50%, rgba(16, 185, 129, 0.3) 100%);
+  border-color: rgba(16, 185, 129, 0.6);
+  box-shadow: 
+    0 0 45px rgba(16, 185, 129, 0.45), 
+    inset 0 0 25px rgba(16, 185, 129, 0.25);
+  animation: holoCorePulse 1s ease-in-out infinite alternate;
+}
+
+.holo-orb-container.processing .holo-ring-outer {
+  border-color: rgba(139, 92, 246, 0.35);
+  animation: rotateClockwise 4s linear infinite;
+}
+
+.holo-orb-container.processing .holo-ring-middle {
+  border-top-color: rgba(2, 132, 199, 0.7);
+  border-bottom-color: rgba(139, 92, 246, 0.7);
+  animation: rotateCounterClockwise 3s linear infinite;
+  width: 220px;
+  height: 220px;
+}
+
+.holo-orb-container.processing .holo-core-orb {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.85) 50%, rgba(2, 132, 199, 0.25) 100%);
+  border-color: rgba(2, 132, 199, 0.6);
+  box-shadow: 
+    0 0 45px rgba(2, 132, 199, 0.4), 
+    inset 0 0 25px rgba(139, 92, 246, 0.25);
+  animation: holoCoreSpin 2.5s linear infinite;
+}
+
+.holo-orb-container.speaking .holo-ring-outer {
+  border-color: rgba(2, 132, 199, 0.3);
+  animation: rotateClockwise 16s linear infinite;
+}
+
+.holo-orb-container.speaking .holo-ring-middle {
+  border-top-color: rgba(2, 132, 199, 0.5);
+  border-bottom-color: rgba(2, 132, 199, 0.5);
+  animation: rotateCounterClockwise 10s linear infinite;
+}
+
+.holo-orb-container.speaking .holo-core-orb {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(224, 242, 254, 0.8) 50%, rgba(2, 132, 199, 0.25) 100%);
+  border-color: rgba(2, 132, 199, 0.55);
+  box-shadow: 
+    0 0 40px rgba(2, 132, 199, 0.35), 
+    inset 0 0 20px rgba(16, 185, 129, 0.15);
+  animation: holoCorePulse 0.7s ease-in-out infinite alternate;
+}
+
+@keyframes rotateClockwise {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes rotateCounterClockwise {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+
+@keyframes holoCorePulse {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.07); }
+}
+
+@keyframes holoCoreSpin {
+  0% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.03) rotate(180deg); }
+  100% { transform: scale(1) rotate(360deg); }
+}
+
+/* Premium Styling Components */
+.preset-capsule {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.preset-capsule:hover {
+  background: rgba(16, 185, 129, 0.08) !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+  color: #047857 !important;
+  transform: translateX(4px);
+}
+
+.slide-matrix-card {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.slide-matrix-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(16, 185, 129, 0.3) !important;
+  background: rgba(16, 185, 129, 0.02) !important;
+}
+
+.slide-matrix-card.active {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(2, 132, 199, 0.06) 100%) !important;
+  border-color: #10b981 !important;
+  box-shadow: 
+    0 10px 25px -5px rgba(16, 185, 129, 0.18),
+    inset 0 1px 1px rgba(255, 255, 255, 0.8) !important;
+}
+
+.audit-log-item {
+  transition: border-color 0.2s, background-color 0.2s;
+}
+
+.audit-log-item:hover {
+  background: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Custom visual icons styling */
+.icon-container-glow {
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+}
+
+
 
 
 
