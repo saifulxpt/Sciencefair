@@ -1,14 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import Pusher from "pusher-js";
 import {
-  Sliders, Layers, ArrowRight, Tv, Smartphone, Sparkles,
-  Play, Pause, RefreshCw, Trash2, Plus, CheckCircle2, Users,
-  Key, Database, ArrowUpRight, MessageSquare, Activity, Info,
+  Sliders, Layers, Tv, Sparkles, Play, Pause, RefreshCw, Trash2,
+  Plus, CheckCircle2, Users, ArrowUpRight, MessageSquare, Activity,
   ChevronLeft, ChevronRight, Wifi, WifiOff, BarChart3, Brain,
-  Zap, Shield, Clock, TrendingUp, Eye, Settings2, LogOut,
-  AlertCircle, Check, X
+  Zap, Settings2, LogOut, AlertCircle, Check, X, Clock, TrendingUp,
+  Eye, Key, Bot, Radio, SkipForward, SkipBack
 } from "lucide-react";
 
 interface TimelineEvent {
@@ -17,7 +16,6 @@ interface TimelineEvent {
   time: string;
   type: "slide" | "vote" | "system";
 }
-
 type TabType = "control" | "votes" | "ai" | "settings";
 
 function Toast({ message, type, onClose }: { message: string; type: "success" | "error"; onClose: () => void }) {
@@ -26,26 +24,51 @@ function Toast({ message, type, onClose }: { message: string; type: "success" | 
     return () => clearTimeout(t);
   }, [onClose]);
   return (
-    <div className={`fixed bottom-6 right-6 z-[200] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl text-sm font-bold backdrop-blur-xl border animate-slide-up ${
-      type === "success"
-        ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-300"
-        : "bg-rose-500/20 border-rose-500/30 text-rose-300"
-    }`}>
-      {type === "success" ? <Check className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
+    <div style={{
+      position: "fixed", bottom: 24, right: 24, zIndex: 9999,
+      display: "flex", alignItems: "center", gap: 10,
+      padding: "12px 20px", borderRadius: 14,
+      background: type === "success" ? "rgba(16,185,129,0.12)" : "rgba(239,68,68,0.12)",
+      border: `1px solid ${type === "success" ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.3)"}`,
+      color: type === "success" ? "#34d399" : "#f87171",
+      fontSize: 13, fontWeight: 700,
+      backdropFilter: "blur(20px)",
+      boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
+      animation: "slideUp 0.3s ease"
+    }}>
+      {type === "success" ? <Check size={15} /> : <AlertCircle size={15} />}
       {message}
-      <button onClick={onClose} className="ml-2 opacity-60 hover:opacity-100 cursor-pointer"><X className="w-3.5 h-3.5" /></button>
+      <button onClick={onClose} style={{ marginLeft: 8, opacity: 0.6, cursor: "pointer", background: "none", border: "none", color: "inherit", display: "flex" }}>
+        <X size={13} />
+      </button>
     </div>
   );
 }
+
+const SLIDES: Record<number, { title: string; emoji: string; desc: string }> = {
+  1: { title: "প্রজেক্ট পরিচিতি", emoji: "🏗️", desc: "AeroStone 3D মডেল" },
+  2: { title: "সমস্যা ও উদ্দেশ্য", emoji: "🌫️", desc: "ঢাকার বায়ুদূষণ" },
+  3: { title: "সমাধান সূত্র", emoji: "💡", desc: "ফটোক্যাটালাইটিক ব্লক" },
+  4: { title: "মিশ্রণ ও অনুপাত", emoji: "⚗️", desc: "TiO₂ নানোপার্টিকেল" },
+  5: { title: "ফটোক্যাটালাইসিস", emoji: "☀️", desc: "UV রশ্মির প্রভাব" },
+  6: { title: "লাইভ সিমুলেশন", emoji: "🔬", desc: "3D রিঅ্যাকশন" },
+  7: { title: "নাইট্রেট রূপান্তর", emoji: "♻️", desc: "দূষণমুক্ত প্রক্রিয়া" },
+  8: { title: "ল্যাব ফলাফল", emoji: "📊", desc: "৮০% NOx হ্রাস" },
+  9: { title: "ইমপ্যাক্ট ক্যালকুলেটর", emoji: "🧮", desc: "পরিবেশগত প্রভাব" },
+  10: { title: "বাণিজ্যিক সুবিধা", emoji: "🏙️", desc: "Sidewalk ব্যবহার" },
+  11: { title: "মতামত পোল", emoji: "🗳️", desc: "দর্শক ভোট" },
+  12: { title: "ভবিষ্যত পরিকল্পনা", emoji: "🚀", desc: "ব্যাপক উৎপাদন" },
+  13: { title: "উপসংহার", emoji: "🎯", desc: "প্রজেক্ট সমাপ্তি" },
+  14: { title: "প্রশ্নোত্তর", emoji: "❓", desc: "বিচারকদের প্রশ্ন" },
+};
 
 export default function AdminPanel() {
   const [pin, setPin] = useState("");
   const [isConnected, setIsConnected] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(1);
-  const [totalSlides] = useState(14);
+  const totalSlides = 14;
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLooping, setIsLooping] = useState(false);
-  const [intervalSec, setIntervalSec] = useState(10);
   const [votes, setVotes] = useState({ yes: 0, no: 0, feed: [] as Array<{ name: string; type: string }> });
   const [aiLogs, setAiLogs] = useState<Array<{ id: number; query: string; response: string; timestamp: string }>>([]);
   const [resetting, setResetting] = useState(false);
@@ -61,741 +84,400 @@ export default function AdminPanel() {
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  const showToast = (message: string, type: "success" | "error") => {
-    setToast({ message, type });
-  };
+  const showToast = (message: string, type: "success" | "error") => setToast({ message, type });
 
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
+    const t = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(t);
   }, []);
 
   useEffect(() => {
-    const fetchConfig = async () => {
-      try {
-        const res = await fetch("/api/assistant/config");
-        const data = await res.json();
-        if (data.status === "success") {
-          setHasKey(data.has_key);
-          if (data.masked_key) setApiKey(data.masked_key);
-          if (data.model) setSelectedModel(data.model);
-          if (data.system_prompt) setSystemPrompt(data.system_prompt);
-        }
-      } catch (e) {}
-    };
-    fetchConfig();
-  }, []);
-
-  const saveConfigSettings = async () => {
-    setSavingConfig(true);
-    try {
-      const res = await fetch("/api/assistant/config", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key: apiKey, model: selectedModel, prompt: systemPrompt })
-      });
-      const data = await res.json();
-      if (data.status === "success") {
-        showToast("কনফিগারেশন সফলভাবে সংরক্ষিত হয়েছে!", "success");
-        logEvent("এআই মডেল ও ট্রেনিং আপডেট করা হয়েছে।", "system");
-        const resConfig = await fetch("/api/assistant/config");
-        const dataConfig = await resConfig.json();
-        if (dataConfig.status === "success") {
-          setHasKey(dataConfig.has_key);
-          if (dataConfig.masked_key) setApiKey(dataConfig.masked_key);
-        }
-      } else {
-        showToast("কনফিগারেশন সংরক্ষণ করা সম্ভব হয়নি।", "error");
+    fetch("/api/assistant/config").then(r => r.json()).then(d => {
+      if (d.status === "success") {
+        setHasKey(d.has_key);
+        if (d.masked_key) setApiKey(d.masked_key);
+        if (d.model) setSelectedModel(d.model);
+        if (d.system_prompt) setSystemPrompt(d.system_prompt);
       }
-    } catch (e) {
-      showToast("সার্ভার ত্রুটি।", "error");
-    } finally {
-      setSavingConfig(false);
-    }
-  };
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
-    const fetchVotes = async () => {
-      try {
-        const res = await fetch("/api/vote/fetch?t=" + Date.now());
-        const data = await res.json();
-        setVotes(data);
-      } catch (e) {}
+    const fetchAll = () => {
+      fetch("/api/vote/fetch?t=" + Date.now()).then(r => r.json()).then(d => setVotes(d)).catch(() => {});
+      fetch("/api/assistant/logs?t=" + Date.now()).then(r => r.json()).then(d => { if (d.status === "success") setAiLogs(d.logs); }).catch(() => {});
     };
-    const fetchAiLogs = async () => {
-      try {
-        const res = await fetch("/api/assistant/logs?t=" + Date.now());
-        const data = await res.json();
-        if (data.status === "success") setAiLogs(data.logs);
-      } catch (e) {}
-    };
-    fetchVotes();
-    fetchAiLogs();
-    const timer = setInterval(() => { fetchVotes(); fetchAiLogs(); }, 3000);
-    return () => clearInterval(timer);
+    fetchAll();
+    const t = setInterval(fetchAll, 3000);
+    return () => clearInterval(t);
   }, []);
 
   useEffect(() => {
     if (!isConnected || !pin) return;
     const pusher = new Pusher("e9724bd6db7ccd51f076", { cluster: "ap2" });
-    const channel = pusher.subscribe(`ecoblock-${pin}`);
-    channel.bind("slide-update", (data: any) => {
-      if (data.action === "sync_remote") {
-        setCurrentSlide(data.current);
-        setIsPlaying(data.isPlaying);
-        setIsLooping(data.isLooping);
-        setIntervalSec(data.interval);
-      } else if (data.action === "disconnect") {
-        setIsConnected(false);
-      }
+    const ch = pusher.subscribe(`ecoblock-${pin}`);
+    ch.bind("slide-update", (d: any) => {
+      if (d.action === "sync_remote") { setCurrentSlide(d.current); setIsPlaying(d.isPlaying); setIsLooping(d.isLooping); }
+      else if (d.action === "disconnect") setIsConnected(false);
     });
-    sendCommand("status");
-    return () => { channel.unbind_all(); channel.unsubscribe(); pusher.disconnect(); };
+    sendCmd("status");
+    return () => { ch.unbind_all(); ch.unsubscribe(); pusher.disconnect(); };
   }, [isConnected, pin]);
 
   const logEvent = (msg: string, type: "slide" | "vote" | "system") => {
-    setTimelineEvents(prev => [{
-      id: Math.random().toString(),
-      event: msg,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-      type
-    }, ...prev].slice(0, 10));
+    setTimelineEvents(prev => [{ id: Math.random().toString(), event: msg, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }), type }, ...prev].slice(0, 12));
   };
 
-  useEffect(() => {
-    if (isConnected) logEvent(`স্লাইড ${currentSlide}-এ পরিবর্তন করা হয়েছে।`, "slide");
-  }, [currentSlide]);
-
+  useEffect(() => { if (isConnected) logEvent(`স্লাইড ${currentSlide}: ${SLIDES[currentSlide]?.title}`, "slide"); }, [currentSlide]);
   const totalVotes = votes.yes + votes.no;
   const approvalRate = totalVotes > 0 ? Math.round((votes.yes / totalVotes) * 100) : 0;
+  useEffect(() => { if (totalVotes > 0) logEvent(`নতুন ভোট — মোট: ${totalVotes}`, "vote"); }, [totalVotes]);
+  useEffect(() => { if (isConnected) logEvent(`পিন ${pin} দিয়ে সংযুক্ত`, "system"); else setTimelineEvents([]); }, [isConnected]);
 
-  useEffect(() => {
-    if (totalVotes > 0) logEvent(`নতুন ভোট জমা। মোট ভোট: ${totalVotes}টি।`, "vote");
-  }, [totalVotes]);
-
-  useEffect(() => {
-    if (isConnected) logEvent(`পিন ${pin} দিয়ে সংযুক্ত হয়েছে।`, "system");
-    else setTimelineEvents([]);
-  }, [isConnected]);
-
-  const sendCommand = async (action: string, slideNum: number | null = null, extra: any = {}) => {
+  const sendCmd = async (action: string, slideNum?: number | null, extra: any = {}) => {
     if (!pin) return;
+    try { await fetch("/api/pusher", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ pin, action, slide: slideNum, ...extra }) }); } catch {}
+  };
+
+  const saveConfig = async () => {
+    setSavingConfig(true);
     try {
-      await fetch("/api/pusher", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pin, action, slide: slideNum, ...extra })
-      });
-    } catch (e) {}
+      const r = await fetch("/api/assistant/config", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ key: apiKey, model: selectedModel, prompt: systemPrompt }) });
+      const d = await r.json();
+      if (d.status === "success") { showToast("কনফিগারেশন সংরক্ষিত হয়েছে!", "success"); logEvent("AI কনফিগ আপডেট হয়েছে", "system"); }
+      else showToast("সংরক্ষণ ব্যর্থ হয়েছে।", "error");
+    } catch { showToast("সার্ভার ত্রুটি।", "error"); }
+    finally { setSavingConfig(false); }
   };
-
-  const handleConnect = () => {
-    if (pin.trim().length >= 4) setIsConnected(true);
-    else showToast("দয়া করে ৪-ডিজিট পিন নাম্বারটি লিখুন।", "error");
-  };
-
-  const handleDisconnect = () => { sendCommand("disconnect"); setIsConnected(false); };
 
   const resetVotes = async () => {
-    if (!confirm("আপনি কি নিশ্চিতভাবে সকল ভোট মুছে দিতে চান?")) return;
+    if (!confirm("সকল ভোট মুছে দেবেন?")) return;
     setResetting(true);
     try {
-      const res = await fetch("/api/vote/reset");
-      const result = await res.json();
-      if (result.status === "success") {
-        setVotes({ yes: 0, no: 0, feed: [] });
-        logEvent("সকল ভোট রিসেট করা হয়েছে।", "system");
-        showToast("ভোট ডেটা সফলভাবে মুছে ফেলা হয়েছে।", "success");
-      }
-    } catch (e) {
-      showToast("ভোট ডেটা মুছতে ত্রুটি।", "error");
-    } finally {
-      setResetting(false);
-    }
+      const r = await fetch("/api/vote/reset");
+      const d = await r.json();
+      if (d.status === "success") { setVotes({ yes: 0, no: 0, feed: [] }); showToast("সব ভোট মুছে গেছে।", "success"); }
+    } catch { showToast("ত্রুটি হয়েছে।", "error"); }
+    finally { setResetting(false); }
   };
 
   const injectVote = async (type: "yes" | "no") => {
-    const voterName = injectName.trim() || "ভোটদাতা " + Math.floor(Math.random() * 100);
+    const name = injectName.trim() || "টেস্ট ভোটার " + Math.floor(Math.random() * 99);
     setInjecting(true);
     try {
-      const res = await fetch("/api/vote/vote", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: voterName, type })
-      });
-      const result = await res.json();
-      if (result.status === "success") {
-        setInjectName("");
-        const resFetch = await fetch("/api/vote/fetch?t=" + Date.now());
-        const data = await resFetch.json();
-        setVotes(data);
-        showToast(`টেস্ট ভোট (${type === 'yes' ? 'হ্যাঁ' : 'না'}) সফলভাবে যোগ হয়েছে।`, "success");
-      }
-    } catch (e) {
-      showToast("টেস্ট ভোট যোগ করা সম্ভব হয়নি।", "error");
-    } finally {
-      setInjecting(false);
-    }
+      await fetch("/api/vote/vote", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, type }) });
+      setInjectName("");
+      const r = await fetch("/api/vote/fetch?t=" + Date.now());
+      setVotes(await r.json());
+      showToast(`"${name}" ভোট (${type === "yes" ? "হ্যাঁ" : "না"}) যোগ হয়েছে`, "success");
+    } catch { showToast("ভোট যোগ করা গেল না।", "error"); }
+    finally { setInjecting(false); }
   };
 
-  const getSlideInfo = (slideNum: number) => {
-    const slides: Record<number, { title: string; emoji: string }> = {
-      1: { title: "প্রজেক্ট পরিচিতি", emoji: "🏗️" },
-      2: { title: "সমস্যা ও উদ্দেশ্য", emoji: "🌫️" },
-      3: { title: "সমাধান সূত্র", emoji: "💡" },
-      4: { title: "মিশ্রণ ও অনুপাত", emoji: "⚗️" },
-      5: { title: "ফটোক্যাটালাইসিস", emoji: "☀️" },
-      6: { title: "লাইভ সিমুলেশন", emoji: "🔬" },
-      7: { title: "নাইট্রেট রূপান্তর", emoji: "♻️" },
-      8: { title: "ল্যাব ফলাফল", emoji: "📊" },
-      9: { title: "ইমপ্যাক্ট ক্যালকুলেটর", emoji: "🧮" },
-      10: { title: "বাণিজ্যিক সুবিধা", emoji: "🏙️" },
-      11: { title: "মতামত পোল", emoji: "🗳️" },
-      12: { title: "ভবিষ্যত পরিকল্পনা", emoji: "🚀" },
-      13: { title: "উপসংহার", emoji: "🎯" },
-      14: { title: "প্রশ্নোত্তর", emoji: "❓" },
-    };
-    return slides[slideNum] || { title: "অজানা", emoji: "📄" };
+  const C = {
+    bg: "#0d1117", card: "#161b22", border: "#21262d", borderHover: "#30363d",
+    text: "#e6edf3", muted: "#7d8590", dim: "#484f58",
+    green: "#3fb950", greenBg: "rgba(63,185,80,0.12)", greenBorder: "rgba(63,185,80,0.25)",
+    blue: "#58a6ff", blueBg: "rgba(88,166,255,0.1)", blueBorder: "rgba(88,166,255,0.25)",
+    purple: "#bc8cff", purpleBg: "rgba(188,140,255,0.1)", purpleBorder: "rgba(188,140,255,0.25)",
+    orange: "#e3b341", orangeBg: "rgba(227,179,65,0.1)", orangeBorder: "rgba(227,179,65,0.25)",
+    red: "#f85149", redBg: "rgba(248,81,73,0.1)", redBorder: "rgba(248,81,73,0.25)",
   };
 
-  const tabs: { id: TabType; label: string; icon: React.ReactNode; badge?: number }[] = [
-    { id: "control", label: "স্লাইড কন্ট্রোল", icon: <Tv className="w-4 h-4" /> },
-    { id: "votes", label: "লাইভ ভোট", icon: <BarChart3 className="w-4 h-4" />, badge: totalVotes },
-    { id: "ai", label: "AI লগ", icon: <Brain className="w-4 h-4" />, badge: aiLogs.length },
-    { id: "settings", label: "সেটিংস", icon: <Settings2 className="w-4 h-4" /> },
-  ];
+  const s: Record<string, React.CSSProperties> = {
+    root: { minHeight: "100vh", background: C.bg, color: C.text, fontFamily: "'Inter', 'Hind Siliguri', system-ui, sans-serif", fontSize: 14 },
+    header: { background: "rgba(13,17,23,0.95)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${C.border}`, position: "sticky", top: 0, zIndex: 100, padding: "0 24px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 },
+    logo: { display: "flex", alignItems: "center", gap: 10 },
+    logoIcon: { width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg,#3fb950,#58a6ff)", display: "flex", alignItems: "center", justifyContent: "center" },
+    logoText: { fontSize: 14, fontWeight: 700, color: C.text },
+    logoSub: { fontSize: 10, color: C.muted, fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase" },
+    pill: { display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 20, fontSize: 11, fontWeight: 600, border: "1px solid", cursor: "default" },
+    hdrLink: { display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 6, fontSize: 12, fontWeight: 600, border: `1px solid ${C.border}`, color: C.muted, cursor: "pointer", textDecoration: "none", transition: "all .15s", background: "transparent" },
+    main: { maxWidth: 1280, margin: "0 auto", padding: "24px 24px", display: "grid", gridTemplateColumns: "320px 1fr", gap: 20 },
+    card: { background: C.card, border: `1px solid ${C.border}`, borderRadius: 12, overflow: "hidden" },
+    cardHead: { padding: "12px 16px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", gap: 8, fontSize: 12, fontWeight: 600, color: C.muted, letterSpacing: "0.05em", textTransform: "uppercase" },
+    cardBody: { padding: 16 },
+    sectionLabel: { fontSize: 11, fontWeight: 600, color: C.dim, textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: 8 },
+    navLink: { display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 6, border: `1px solid transparent`, fontSize: 13, fontWeight: 500, color: C.muted, textDecoration: "none", cursor: "pointer", transition: "all .15s", marginBottom: 2 },
+    stat: { padding: "14px 16px", borderRadius: 8, border: `1px solid ${C.border}`, background: "rgba(255,255,255,0.02)" },
+    tab: { display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 6, fontSize: 12, fontWeight: 600, border: `1px solid ${C.border}`, cursor: "pointer", color: C.muted, transition: "all .15s", background: "transparent", whiteSpace: "nowrap" as const },
+    tabActive: { background: C.greenBg, borderColor: C.greenBorder, color: C.green },
+    input: { width: "100%", padding: "8px 12px", borderRadius: 6, border: `1px solid ${C.border}`, background: "rgba(255,255,255,0.04)", color: C.text, fontSize: 13, outline: "none", fontFamily: "inherit", transition: "border-color .15s" },
+    textarea: { width: "100%", padding: "10px 12px", borderRadius: 6, border: `1px solid ${C.border}`, background: "rgba(255,255,255,0.04)", color: C.text, fontSize: 12, outline: "none", fontFamily: "inherit", resize: "vertical" as const, lineHeight: 1.6, transition: "border-color .15s" },
+    select: { width: "100%", padding: "8px 12px", borderRadius: 6, border: `1px solid ${C.border}`, background: "#1c2128", color: C.text, fontSize: 13, outline: "none", cursor: "pointer" },
+    btnGreen: { display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "8px 16px", borderRadius: 6, border: "none", background: C.green, color: "#0d1117", fontSize: 13, fontWeight: 700, cursor: "pointer", transition: "all .15s", width: "100%" },
+    btnRed: { display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "7px 14px", borderRadius: 6, border: `1px solid ${C.redBorder}`, background: C.redBg, color: C.red, fontSize: 12, fontWeight: 600, cursor: "pointer", width: "100%", transition: "all .15s" },
+    btnGhost: { display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "7px 12px", borderRadius: 6, border: `1px solid ${C.border}`, background: "transparent", color: C.muted, fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "all .15s" },
+    btnGhostActive: { borderColor: C.greenBorder, background: C.greenBg, color: C.green },
+    slideGrid: { display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 6 },
+    slideBtn: { aspectRatio: "1", display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "center", borderRadius: 6, border: `1px solid ${C.border}`, background: "rgba(255,255,255,0.02)", cursor: "pointer", fontSize: 12, fontWeight: 700, color: C.muted, transition: "all .15s" },
+    slideBtnActive: { borderColor: C.greenBorder, background: C.greenBg, color: C.green, boxShadow: `0 0 0 2px ${C.greenBg}` },
+    voteBar: { height: 6, borderRadius: 3, overflow: "hidden", background: "rgba(255,255,255,0.06)" },
+    logItem: { padding: "12px", borderRadius: 8, border: `1px solid ${C.border}`, background: "rgba(255,255,255,0.02)", marginBottom: 8 },
+    badge: { display: "inline-flex", alignItems: "center", padding: "2px 8px", borderRadius: 20, fontSize: 11, fontWeight: 700, letterSpacing: "0.04em" },
+  };
 
   return (
-    <div className="admin-root min-h-screen" style={{ fontFamily: "'Hind Siliguri', 'Inter', sans-serif" }}>
-      <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap');
-        
-        * { box-sizing: border-box; }
-        
-        .admin-root {
-          background: #0a0f1a;
-          color: #e2e8f0;
-        }
-        
-        .glass-dark {
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.08);
-          backdrop-filter: blur(20px);
-        }
-        
-        .glass-card {
-          background: rgba(255,255,255,0.05);
-          border: 1px solid rgba(255,255,255,0.09);
-          border-radius: 20px;
-          backdrop-filter: blur(20px);
-        }
-
-        .glow-emerald { box-shadow: 0 0 30px rgba(16,185,129,0.15); }
-        .glow-blue { box-shadow: 0 0 30px rgba(59,130,246,0.15); }
-        
-        .bg-grid {
-          background-image: 
-            linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-          background-size: 40px 40px;
-        }
-
-        .neon-btn {
-          background: linear-gradient(135deg, #10b981, #059669);
-          box-shadow: 0 4px 15px rgba(16,185,129,0.3);
-          transition: all 0.2s ease;
-        }
-        .neon-btn:hover {
-          box-shadow: 0 6px 25px rgba(16,185,129,0.5);
-          transform: translateY(-1px);
-        }
-        .neon-btn:active { transform: translateY(0); }
-        
-        .danger-btn {
-          background: rgba(239,68,68,0.1);
-          border: 1px solid rgba(239,68,68,0.25);
-          color: #f87171;
-          transition: all 0.2s ease;
-        }
-        .danger-btn:hover {
-          background: rgba(239,68,68,0.2);
-          box-shadow: 0 4px 15px rgba(239,68,68,0.2);
-        }
-        
-        .tab-active {
-          background: rgba(16,185,129,0.15);
-          border-color: rgba(16,185,129,0.4) !important;
-          color: #10b981;
-        }
-        
-        .slide-btn-active {
-          background: linear-gradient(135deg, rgba(16,185,129,0.2), rgba(59,130,246,0.2));
-          border-color: rgba(16,185,129,0.5) !important;
-          color: #10b981;
-          box-shadow: 0 0 15px rgba(16,185,129,0.15);
-        }
-        
-        .input-dark {
-          background: rgba(255,255,255,0.05);
-          border: 1px solid rgba(255,255,255,0.1);
-          color: #e2e8f0;
-          border-radius: 12px;
-          transition: all 0.2s ease;
-          outline: none;
-        }
-        .input-dark:focus {
-          border-color: rgba(16,185,129,0.5);
-          background: rgba(255,255,255,0.07);
-          box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
-        }
-        .input-dark::placeholder { color: rgba(148,163,184,0.5); }
-        
-        .select-dark {
-          background: rgba(255,255,255,0.05);
-          border: 1px solid rgba(255,255,255,0.1);
-          color: #e2e8f0;
-          border-radius: 12px;
-          outline: none;
-          cursor: pointer;
-        }
-        .select-dark:focus {
-          border-color: rgba(16,185,129,0.5);
-          box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
-        }
-        .select-dark option { background: #1e293b; }
-        
-        .scrollbar-dark::-webkit-scrollbar { width: 5px; }
-        .scrollbar-dark::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); border-radius: 5px; }
-        .scrollbar-dark::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 5px; }
-        
-        .pulse-dot {
-          width: 8px; height: 8px;
-          background: #10b981;
-          border-radius: 50%;
-          box-shadow: 0 0 0 0 rgba(16,185,129,0.7);
-          animation: pulse-ring 2s infinite;
-        }
-        @keyframes pulse-ring {
-          0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.7); }
-          70% { box-shadow: 0 0 0 8px rgba(16,185,129,0); }
-          100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
-        }
-
-        @keyframes slide-up {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-slide-up { animation: slide-up 0.3s ease-out; }
-        
-        .stat-card {
-          background: rgba(255,255,255,0.04);
-          border: 1px solid rgba(255,255,255,0.07);
-          border-radius: 16px;
-          padding: 16px 20px;
-          transition: all 0.2s ease;
-        }
-        .stat-card:hover {
-          background: rgba(255,255,255,0.07);
-          border-color: rgba(255,255,255,0.12);
-        }
-
-        .timeline-line {
-          position: relative;
-          padding-left: 20px;
-        }
-        .timeline-line::before {
-          content: '';
-          position: absolute;
-          left: 7px;
-          top: 8px;
-          bottom: 0;
-          width: 1px;
-          background: rgba(255,255,255,0.08);
-        }
-        .timeline-dot {
-          position: absolute;
-          left: 0;
-          top: 6px;
-          width: 15px;
-          height: 15px;
-          border-radius: 50%;
-          border: 2px solid;
-        }
-        .timeline-dot-slide { background: rgba(16,185,129,0.2); border-color: #10b981; }
-        .timeline-dot-vote { background: rgba(249,115,22,0.2); border-color: #f97316; }
-        .timeline-dot-system { background: rgba(139,92,246,0.2); border-color: #8b5cf6; }
-        
-        .page-link-card {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-          padding: 14px 16px;
-          border-radius: 14px;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.07);
-          transition: all 0.2s ease;
-          text-decoration: none;
-          color: inherit;
-        }
-        .page-link-card:hover {
-          background: rgba(255,255,255,0.07);
-          border-color: rgba(255,255,255,0.15);
-          transform: translateX(4px);
-        }
-        
-        @media (max-width: 768px) {
-          .admin-sidebar { display: none; }
-          .admin-main { padding: 16px; }
+    <div style={s.root}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        @keyframes slideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes spin { to{transform:rotate(360deg)} }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        .spin { animation: spin 1s linear infinite; }
+        a:hover .nav-lnk-inner, button.nav-hover:hover { background: rgba(255,255,255,0.04) !important; color: #e6edf3 !important; }
+        .hdr-link:hover { background: rgba(255,255,255,0.06) !important; color: #e6edf3 !important; }
+        .slide-btn:hover:not(.slide-btn-active) { border-color: #30363d !important; background: rgba(255,255,255,0.05) !important; color: #e6edf3 !important; }
+        .tab-btn:hover:not(.tab-active) { background: rgba(255,255,255,0.04) !important; color: #e6edf3 !important; }
+        .input-field:focus { border-color: #3fb950 !important; }
+        .btn-gh:hover { background: rgba(255,255,255,0.06) !important; color: #e6edf3 !important; }
+        .btn-red:hover { background: rgba(248,81,73,0.18) !important; }
+        .btn-green:hover { opacity: 0.9; }
+        .quick-jump:hover { background: rgba(255,255,255,0.04) !important; border-color: #30363d !important; }
+        .nav-link-item:hover { background: rgba(255,255,255,0.04) !important; border-color: #30363d !important; color: #e6edf3 !important; }
+        input, textarea, select { box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+        @media (max-width: 900px) {
+          .admin-grid { grid-template-columns: 1fr !important; }
+          .admin-sidebar { display: none !important; }
         }
       `}</style>
 
-      {/* Background */}
-      <div className="fixed inset-0 bg-grid opacity-100 pointer-events-none z-0" />
-      <div className="fixed top-0 right-0 w-[600px] h-[600px] rounded-full opacity-10 pointer-events-none z-0"
-        style={{ background: "radial-gradient(circle, #10b981, transparent 70%)", transform: "translate(30%, -30%)" }} />
-      <div className="fixed bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-10 pointer-events-none z-0"
-        style={{ background: "radial-gradient(circle, #3b82f6, transparent 70%)", transform: "translate(-30%, 30%)" }} />
-
-      {/* Toast Notification */}
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
-      {/* Top Header */}
-      <header className="glass-dark sticky top-0 z-50 border-t-0 border-x-0 border-b" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-        <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between gap-4">
-          {/* Brand */}
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: "linear-gradient(135deg, #10b981, #3b82f6)" }}>
-              <Sliders className="w-4.5 h-4.5 text-white" />
-            </div>
-            <div>
-              <div className="font-black text-sm text-white tracking-wide">এ্যারোস্টোন কন্ট্রোল</div>
-              <div className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">Science Fair 2026 Admin</div>
-            </div>
+      {/* Header */}
+      <header style={s.header}>
+        <div style={s.logo}>
+          <div style={s.logoIcon}><Sliders size={15} color="#0d1117" /></div>
+          <div>
+            <div style={s.logoText}>এ্যারোস্টোন অ্যাডমিন</div>
+            <div style={s.logoSub}>Science Fair 2026</div>
           </div>
+        </div>
 
-          {/* Center: Live time & status */}
-          <div className="hidden md:flex items-center gap-3">
-            <div className="stat-card flex items-center gap-2 py-2 px-3">
-              <Clock className="w-3.5 h-3.5 text-slate-400" />
-              <span className="font-mono text-sm text-slate-300 font-bold">
-                {currentTime.toLocaleTimeString("bn-BD")}
-              </span>
-            </div>
-            <div className={`flex items-center gap-2 py-2 px-3 rounded-xl border text-xs font-bold ${
-              isConnected
-                ? "bg-emerald-500/10 border-emerald-500/25 text-emerald-400"
-                : "bg-slate-700/30 border-slate-600/30 text-slate-500"
-            }`}>
-              {isConnected ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
-              {isConnected ? `সংযুক্ত • পিন ${pin}` : "সংযুক্ত নেই"}
-            </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{ fontSize: 11, color: C.muted, fontFamily: "monospace", fontWeight: 600, padding: "4px 10px", borderRadius: 6, border: `1px solid ${C.border}`, background: "rgba(255,255,255,0.03)" }}>
+            {currentTime.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
           </div>
-
-          {/* Right: Quick actions */}
-          <div className="flex items-center gap-2">
-            <a href="/assistant/" target="_blank"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white transition-colors"
-              style={{ background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.25)" }}>
-              <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-              <span className="hidden sm:inline">AI অ্যাসিস্ট্যান্ট</span>
-            </a>
-            <a href="/presentation/" target="_blank"
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white transition-colors"
-              style={{ background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.25)" }}>
-              <Tv className="w-3.5 h-3.5 text-blue-400" />
-              <span className="hidden sm:inline">স্লাইডশো</span>
-            </a>
+          <div style={{ ...s.pill, ...(isConnected ? { background: C.greenBg, borderColor: C.greenBorder, color: C.green } : { background: "rgba(255,255,255,0.04)", borderColor: C.border, color: C.dim }) }}>
+            {isConnected ? <><span style={{ width: 6, height: 6, borderRadius: "50%", background: C.green, animation: "blink 2s infinite", display: "inline-block" }} /> পিন {pin}</> : <><WifiOff size={10} /> সংযুক্ত নেই</>}
           </div>
+          <a href="/assistant/" target="_blank" className="hdr-link" style={s.hdrLink}><Sparkles size={12} color={C.purple} /> AI অ্যাসিস্ট্যান্ট</a>
+          <a href="/presentation/" target="_blank" className="hdr-link" style={s.hdrLink}><Tv size={12} color={C.blue} /> স্লাইডশো</a>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 md:px-6 py-6 relative z-10">
-        
-        {/* Stats Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          {[
-            { label: "মোট ভোট", value: totalVotes, icon: <BarChart3 className="w-4 h-4" />, color: "#10b981" },
-            { label: "সমর্থন হার", value: `${approvalRate}%`, icon: <TrendingUp className="w-4 h-4" />, color: "#3b82f6" },
-            { label: "AI কথোপকথন", value: aiLogs.length, icon: <Brain className="w-4 h-4" />, color: "#8b5cf6" },
-            { label: "বর্তমান স্লাইড", value: `${currentSlide}/${totalSlides}`, icon: <Eye className="w-4 h-4" />, color: "#f97316" },
-          ].map((stat, i) => (
-            <div key={i} className="stat-card">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-slate-500 font-semibold">{stat.label}</span>
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center"
-                  style={{ background: `${stat.color}20`, color: stat.color }}>
-                  {stat.icon}
+      {/* Body */}
+      <div className="admin-grid" style={s.main}>
+
+        {/* ─── Left Sidebar ─── */}
+        <div className="admin-sidebar" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+          {/* Stats */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            {[
+              { label: "মোট ভোট", value: totalVotes, color: C.green, icon: <BarChart3 size={13} /> },
+              { label: "সমর্থন", value: `${approvalRate}%`, color: C.blue, icon: <TrendingUp size={13} /> },
+              { label: "AI লগ", value: aiLogs.length, color: C.purple, icon: <Brain size={13} /> },
+              { label: "স্লাইড", value: `${currentSlide}/${totalSlides}`, color: C.orange, icon: <Eye size={13} /> },
+            ].map((st, i) => (
+              <div key={i} style={s.stat}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                  <div style={{ fontSize: 11, color: C.dim, fontWeight: 600 }}>{st.label}</div>
+                  <div style={{ color: st.color }}>{st.icon}</div>
                 </div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: C.text, letterSpacing: "-0.5px" }}>{st.value}</div>
               </div>
-              <div className="text-2xl font-black text-white">{stat.value}</div>
+            ))}
+          </div>
+
+          {/* Navigation */}
+          <div style={s.card}>
+            <div style={s.cardHead}><Layers size={12} /> পেজ নেভিগেশন</div>
+            <div style={{ padding: "8px" }}>
+              {[
+                { href: "/", color: C.green, icon: <Layers size={14} />, label: "মূল ড্যাশবোর্ড", sub: "Landing Page" },
+                { href: "/presentation/", color: C.blue, icon: <Tv size={14} />, label: "স্লাইডশো স্ক্রিন", sub: "Presentation" },
+                { href: "/assistant/", color: C.purple, icon: <Bot size={14} />, label: "AI ভয়েস অ্যাসিস্ট্যান্ট", sub: "Tablet Screen" },
+                { href: "/presentation/vote/", color: C.orange, icon: <BarChart3 size={14} />, label: "লাইভ ভোট স্ক্রিন", sub: "Audience Voting" },
+              ].map((lnk, i) => (
+                <a key={i} href={lnk.href} target="_blank" className="nav-link-item" style={{ ...s.navLink }}>
+                  <div style={{ width: 28, height: 28, borderRadius: 6, background: `${lnk.color}18`, display: "flex", alignItems: "center", justifyContent: "center", color: lnk.color, flexShrink: 0 }}>{lnk.icon}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: C.text }}>{lnk.label}</div>
+                    <div style={{ fontSize: 10, color: C.dim }}>{lnk.sub}</div>
+                  </div>
+                  <ArrowUpRight size={12} color={C.dim} />
+                </a>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
 
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-          {/* Left Sidebar */}
-          <div className="lg:col-span-4 space-y-4">
-            
-            {/* Page Navigation */}
-            <div className="glass-card p-5">
-              <div className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                <ArrowRight className="w-3.5 h-3.5 text-emerald-500" />
-                পেজ নেভিগেশন
-              </div>
-              <div className="space-y-2">
-                {[
-                  { href: "/", icon: <Layers className="w-4 h-4" />, label: "মূল ড্যাশবোর্ড", desc: "ল্যান্ডিং পেজ", color: "#10b981" },
-                  { href: "/presentation/", icon: <Tv className="w-4 h-4" />, label: "স্লাইডশো স্ক্রিন", desc: "প্রেজেন্টেশন", color: "#3b82f6" },
-                  { href: "/assistant/", icon: <Sparkles className="w-4 h-4" />, label: "AI ভয়েস অ্যাসিস্ট্যান্ট", desc: "ট্যাবলেট পেজ", color: "#8b5cf6" },
-                  { href: "/presentation/vote/", icon: <BarChart3 className="w-4 h-4" />, label: "লাইভ ভোট স্ক্রিন", desc: "দর্শক ভোটিং", color: "#f97316" },
-                ].map((link, i) => (
-                  <a key={i} href={link.href} target="_blank" className="page-link-card group">
-                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                      style={{ background: `${link.color}15`, color: link.color }}>
-                      {link.icon}
-                    </div>
-                    <div className="flex-grow min-w-0">
-                      <div className="text-xs font-bold text-slate-200 group-hover:text-white transition-colors">{link.label}</div>
-                      <div className="text-[10px] text-slate-500">{link.desc}</div>
-                    </div>
-                    <ArrowUpRight className="w-3.5 h-3.5 text-slate-600 group-hover:text-slate-300 transition-colors shrink-0" />
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            {/* Live Vote Stats */}
-            <div className="glass-card p-5">
-              <div className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                <BarChart3 className="w-3.5 h-3.5 text-emerald-500" />
-                লাইভ মতামত পরিসংখ্যান
-              </div>
-
-              {/* Donut Chart */}
-              <div className="flex items-center gap-5 mb-4">
-                <div className="relative w-20 h-20 shrink-0">
-                  <svg className="w-full h-full -rotate-90">
-                    <circle cx="40" cy="40" r="32" strokeWidth="7" stroke="rgba(255,255,255,0.06)" fill="transparent" />
-                    <circle cx="40" cy="40" r="32" strokeWidth="7"
-                      stroke="url(#emeraldGrad)"
-                      strokeDasharray={2 * Math.PI * 32}
-                      strokeDashoffset={2 * Math.PI * 32 - (approvalRate / 100) * (2 * Math.PI * 32)}
-                      strokeLinecap="round"
-                      fill="transparent"
+          {/* Vote Stats */}
+          <div style={s.card}>
+            <div style={s.cardHead}><BarChart3 size={12} /> লাইভ মতামত</div>
+            <div style={s.cardBody}>
+              {/* SVG Ring */}
+              <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
+                <div style={{ position: "relative", width: 72, height: 72, flexShrink: 0 }}>
+                  <svg width={72} height={72} style={{ transform: "rotate(-90deg)" }}>
+                    <circle cx={36} cy={36} r={28} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={6} />
+                    <circle cx={36} cy={36} r={28} fill="none"
+                      stroke={C.green} strokeWidth={6} strokeLinecap="round"
+                      strokeDasharray={2 * Math.PI * 28}
+                      strokeDashoffset={2 * Math.PI * 28 * (1 - approvalRate / 100)}
                       style={{ transition: "stroke-dashoffset 0.5s ease" }}
                     />
-                    <defs>
-                      <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#10b981" />
-                        <stop offset="100%" stopColor="#3b82f6" />
-                      </linearGradient>
-                    </defs>
                   </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-lg font-black text-white leading-none">{approvalRate}%</span>
-                    <span className="text-[8px] text-slate-500 font-bold mt-0.5">সমর্থন</span>
+                  <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ fontSize: 16, fontWeight: 800, color: C.text }}>{approvalRate}%</span>
                   </div>
                 </div>
-
-                <div className="flex-grow space-y-3">
-                  {[
-                    { label: "হ্যাঁ", count: votes.yes, pct: totalVotes > 0 ? Math.round(votes.yes/totalVotes*100) : 0, color: "#10b981" },
-                    { label: "না", count: votes.no, pct: totalVotes > 0 ? Math.round(votes.no/totalVotes*100) : 0, color: "#f87171" },
-                  ].map((v, i) => (
-                    <div key={i}>
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="font-bold" style={{ color: v.color }}>{v.label}</span>
-                        <span className="text-slate-400 font-mono">{v.count} ({v.pct}%)</span>
+                <div style={{ flex: 1 }}>
+                  {[{ label: "হ্যাঁ", val: votes.yes, pct: totalVotes > 0 ? Math.round(votes.yes / totalVotes * 100) : 0, color: C.green },
+                    { label: "না", val: votes.no, pct: totalVotes > 0 ? Math.round(votes.no / totalVotes * 100) : 0, color: C.red }].map((v, i) => (
+                    <div key={i} style={{ marginBottom: 10 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, marginBottom: 4 }}>
+                        <span style={{ fontWeight: 600, color: v.color }}>{v.label}</span>
+                        <span style={{ color: C.muted, fontFamily: "monospace" }}>{v.val} ({v.pct}%)</span>
                       </div>
-                      <div className="h-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.06)" }}>
-                        <div className="h-full rounded-full transition-all duration-500"
-                          style={{ width: `${v.pct}%`, background: v.color }} />
-                      </div>
+                      <div style={s.voteBar}><div style={{ height: "100%", width: `${v.pct}%`, background: v.color, borderRadius: 3, transition: "width 0.5s ease" }} /></div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Actions */}
-              <button onClick={resetVotes} disabled={resetting}
-                className="danger-btn w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer">
-                <Trash2 className="w-3.5 h-3.5" />
-                {resetting ? "মুছে ফেলা হচ্ছে..." : "সব ভোট রিসেট করুন"}
+              <button onClick={resetVotes} disabled={resetting} className="btn-red" style={s.btnRed}>
+                <Trash2 size={12} />{resetting ? "মুছছে..." : "সব ভোট রিসেট করুন"}
               </button>
 
-              <div className="mt-3 space-y-2">
-                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">টেস্ট ভোট ইনজেক্ট</div>
-                <div className="flex gap-2">
-                  <input type="text" value={injectName} onChange={(e) => setInjectName(e.target.value)}
-                    placeholder="ভোটারের নাম (ঐচ্ছিক)"
-                    className="input-dark flex-grow text-xs px-3 py-2" />
-                  <button onClick={() => injectVote("yes")} disabled={injecting}
-                    className="neon-btn px-3 py-2 rounded-xl text-white text-xs font-bold flex items-center gap-1 cursor-pointer">
-                    <Plus className="w-3.5 h-3.5" /> হ্যাঁ
-                  </button>
-                  <button onClick={() => injectVote("no")} disabled={injecting}
-                    className="px-3 py-2 rounded-xl text-white text-xs font-bold flex items-center gap-1 cursor-pointer"
-                    style={{ background: "rgba(239,68,68,0.2)", border: "1px solid rgba(239,68,68,0.3)" }}>
-                    <Plus className="w-3.5 h-3.5" /> না
-                  </button>
+              <div style={{ marginTop: 12, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
+                <div style={s.sectionLabel}>টেস্ট ভোট ইনজেক্ট</div>
+                <div style={{ display: "flex", gap: 6 }}>
+                  <input value={injectName} onChange={e => setInjectName(e.target.value)} placeholder="ভোটারের নাম" className="input-field" style={{ ...s.input, flex: 1, fontSize: 12 }} />
+                  <button onClick={() => injectVote("yes")} disabled={injecting} style={{ padding: "7px 10px", borderRadius: 6, border: `1px solid ${C.greenBorder}`, background: C.greenBg, color: C.green, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 3 }}><Plus size={11} />হ্যাঁ</button>
+                  <button onClick={() => injectVote("no")} disabled={injecting} style={{ padding: "7px 10px", borderRadius: 6, border: `1px solid ${C.redBorder}`, background: C.redBg, color: C.red, fontSize: 12, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 3 }}><Plus size={11} />না</button>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Right Main Panel */}
-          <div className="lg:col-span-8 space-y-4">
+        {/* ─── Right Main ─── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
-            {/* Tabs */}
-            <div className="flex gap-2 overflow-x-auto pb-1">
-              {tabs.map((tab) => (
-                <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap border transition-all cursor-pointer ${
-                    activeTab === tab.id
-                      ? "tab-active"
-                      : "bg-white/3 border-white/07 text-slate-500 hover:text-slate-300 hover:bg-white/05"
-                  }`}
-                  style={{ borderColor: activeTab === tab.id ? undefined : "rgba(255,255,255,0.07)" }}>
-                  {tab.icon}
-                  {tab.label}
-                  {tab.badge !== undefined && tab.badge > 0 && (
-                    <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black"
-                      style={{ background: "rgba(16,185,129,0.2)", color: "#10b981" }}>
-                      {tab.badge}
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
+          {/* Tab Bar */}
+          <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2 }}>
+            {([
+              { id: "control" as TabType, label: "স্লাইড কন্ট্রোল", icon: <Radio size={12} /> },
+              { id: "votes" as TabType, label: "ভোট ফিড", icon: <Users size={12} />, badge: totalVotes },
+              { id: "ai" as TabType, label: "AI কথোপকথন", icon: <MessageSquare size={12} />, badge: aiLogs.length },
+              { id: "settings" as TabType, label: "সেটিংস", icon: <Settings2 size={12} /> },
+            ] as const).map(tab => (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`tab-btn ${activeTab === tab.id ? "tab-active" : ""}`}
+                style={{ ...s.tab, ...(activeTab === tab.id ? s.tabActive : {}) }}>
+                {tab.icon}{tab.label}
+                {"badge" in tab && tab.badge > 0 && (
+                  <span style={{ padding: "1px 6px", borderRadius: 20, background: activeTab === tab.id ? "rgba(63,185,80,0.2)" : "rgba(255,255,255,0.07)", fontSize: 10, fontWeight: 700, color: activeTab === tab.id ? C.green : C.muted }}>{tab.badge}</span>
+                )}
+              </button>
+            ))}
+          </div>
 
-            {/* Tab: Slide Control */}
-            {activeTab === "control" && (
-              <div className="glass-card p-5 space-y-5">
-                <div className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <Tv className="w-3.5 h-3.5 text-emerald-500" />
-                  স্লাইড রিমোট কন্ট্রোল
-                </div>
-
+          {/* ── TAB: Control ── */}
+          {activeTab === "control" && (
+            <div style={s.card}>
+              <div style={s.cardHead}><Radio size={12} color={C.green} /> স্লাইড রিমোট কন্ট্রোল</div>
+              <div style={s.cardBody}>
                 {!isConnected ? (
-                  <div className="max-w-sm mx-auto space-y-4 py-4">
-                    <div className="text-center text-sm text-slate-400 leading-relaxed">
-                      প্রেজেন্টেশন স্লাইডশোতে প্রদর্শিত <br />
-                      <strong className="text-white">৪-ডিজিট পিন</strong> দিয়ে কানেক্ট করুন
+                  <div style={{ maxWidth: 340, margin: "20px auto" }}>
+                    <div style={{ textAlign: "center", color: C.muted, fontSize: 13, marginBottom: 20, lineHeight: 1.8 }}>
+                      প্রেজেন্টেশন স্লাইডশোতে প্রদর্শিত<br />
+                      <span style={{ color: C.text, fontWeight: 700 }}>৪-ডিজিট পিন</span> দিয়ে কানেক্ট করুন
                     </div>
                     <input type="text" pattern="\d*" maxLength={4} value={pin}
-                      onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
-                      placeholder="0000"
-                      className="input-dark w-full text-center text-4xl font-black py-5 tracking-widest"
-                      onKeyDown={(e) => e.key === "Enter" && handleConnect()}
-                    />
-                    <button onClick={handleConnect} disabled={pin.length < 4}
-                      className="neon-btn w-full py-3.5 rounded-xl text-white text-sm font-black flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
-                      <Wifi className="w-4 h-4" /> প্রেজেন্টেশনের সাথে সংযুক্ত করুন
+                      onChange={e => setPin(e.target.value.replace(/\D/g, ""))}
+                      onKeyDown={e => e.key === "Enter" && pin.length >= 4 && setIsConnected(true)}
+                      placeholder="0000" className="input-field"
+                      style={{ ...s.input, textAlign: "center", fontSize: 32, fontWeight: 800, letterSpacing: "0.3em", padding: "16px", marginBottom: 12, fontFamily: "monospace" }} />
+                    <button onClick={() => pin.length >= 4 ? setIsConnected(true) : showToast("৪-ডিজিট পিন দিন", "error")}
+                      style={{ ...s.btnGreen, gap: 8, fontSize: 14 }} className="btn-green">
+                      <Wifi size={15} /> কানেক্ট করুন
                     </button>
                   </div>
                 ) : (
-                  <div className="space-y-4">
-                    {/* Connection Banner */}
-                    <div className="flex items-center justify-between p-3 rounded-xl"
-                      style={{ background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)" }}>
-                      <div className="flex items-center gap-2.5">
-                        <div className="pulse-dot" />
-                        <span className="text-xs font-bold text-emerald-400">সংযুক্ত • পিন: {pin}</span>
+                  <div>
+                    {/* Connection bar */}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", borderRadius: 6, background: C.greenBg, border: `1px solid ${C.greenBorder}`, marginBottom: 16 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, fontWeight: 600, color: C.green }}>
+                        <span style={{ width: 7, height: 7, borderRadius: "50%", background: C.green, animation: "blink 2s infinite", display: "inline-block" }} />
+                        লাইভ • পিন: <strong>{pin}</strong>
                       </div>
-                      <button onClick={handleDisconnect}
-                        className="text-xs font-bold text-rose-400 hover:text-rose-300 cursor-pointer flex items-center gap-1">
-                        <LogOut className="w-3.5 h-3.5" /> বিচ্ছিন্ন
+                      <button onClick={() => { sendCmd("disconnect"); setIsConnected(false); }} style={{ fontSize: 11, fontWeight: 600, color: C.red, cursor: "pointer", background: "none", border: "none", display: "flex", alignItems: "center", gap: 4 }}>
+                        <LogOut size={11} /> বিচ্ছিন্ন
                       </button>
                     </div>
 
-                    {/* Current Slide Preview */}
-                    <div className="p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
-                      <div className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">বর্তমান স্লাইড</div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-3xl">{getSlideInfo(currentSlide).emoji}</span>
-                        <div>
-                          <div className="text-sm font-extrabold text-white">
-                            স্লাইড {currentSlide}: {getSlideInfo(currentSlide).title}
-                          </div>
-                          <div className="text-xs text-slate-500 mt-0.5">
-                            {currentSlide}/{totalSlides} • {isPlaying ? "▶ অটো-প্লে চলছে" : "⏸ বিরতিতে আছে"}
-                          </div>
-                        </div>
+                    {/* Current slide preview */}
+                    <div style={{ padding: "14px 16px", borderRadius: 8, border: `1px solid ${C.border}`, background: "rgba(255,255,255,0.02)", marginBottom: 14, display: "flex", alignItems: "center", gap: 14 }}>
+                      <div style={{ fontSize: 32 }}>{SLIDES[currentSlide]?.emoji}</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 11, color: C.dim, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 3 }}>বর্তমান স্লাইড ({currentSlide}/{totalSlides})</div>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: C.text }}>{SLIDES[currentSlide]?.title}</div>
+                        <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>{SLIDES[currentSlide]?.desc}</div>
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <div style={{ fontSize: 11, color: isPlaying ? C.green : C.dim, fontWeight: 600 }}>{isPlaying ? "▶ Auto-play" : "⏸ Paused"}</div>
                       </div>
                     </div>
 
-                    {/* Prev/Next & Play/Loop */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="flex gap-2">
-                        <button onClick={() => sendCommand("prev")}
-                          className="flex-1 py-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold cursor-pointer transition-all"
-                          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)", color: "#94a3b8" }}>
-                          <ChevronLeft className="w-4 h-4" /> আগে
+                    {/* Controls */}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8, marginBottom: 14 }}>
+                      {[
+                        { action: "prev", icon: <SkipBack size={14} />, label: "আগে", active: false },
+                        { action: "next", icon: <SkipForward size={14} />, label: "পরে", active: false },
+                        { action: isPlaying ? "pause" : "play", icon: isPlaying ? <Pause size={14} /> : <Play size={14} />, label: isPlaying ? "থামান" : "Play", active: isPlaying },
+                        { action: "toggle_loop", icon: <RefreshCw size={14} />, label: isLooping ? "লুপ চলছে" : "লুপ", active: isLooping },
+                      ].map((ctrl, i) => (
+                        <button key={i} onClick={() => sendCmd(ctrl.action)} className="btn-gh"
+                          style={{ ...s.btnGhost, ...(ctrl.active ? s.btnGhostActive : {}), flexDirection: "column", gap: 4, padding: "10px 6px", fontSize: 11, fontWeight: 600 }}>
+                          {ctrl.icon}{ctrl.label}
                         </button>
-                        <button onClick={() => sendCommand("next")}
-                          className="flex-1 py-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold cursor-pointer transition-all"
-                          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)", color: "#94a3b8" }}>
-                          পরে <ChevronRight className="w-4 h-4" />
-                        </button>
-                      </div>
-                      <div className="flex gap-2">
-                        <button onClick={() => isPlaying ? sendCommand("pause") : sendCommand("play")}
-                          className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold cursor-pointer transition-all ${
-                            isPlaying ? "tab-active" : ""
-                          }`}
-                          style={isPlaying ? {} : { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)", color: "#94a3b8" }}>
-                          {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                          {isPlaying ? "থামান" : "অটো-প্লে"}
-                        </button>
-                        <button onClick={() => sendCommand("toggle_loop")}
-                          className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold cursor-pointer transition-all ${
-                            isLooping ? "tab-active" : ""
-                          }`}
-                          style={isLooping ? {} : { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)", color: "#94a3b8" }}>
-                          <RefreshCw className="w-4 h-4" />
-                          {isLooping ? "লুপ চলছে" : "লুপ"}
-                        </button>
-                      </div>
+                      ))}
                     </div>
 
-                    {/* Slide Grid */}
-                    <div>
-                      <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">সরাসরি স্লাইডে যান</div>
-                      <div className="grid grid-cols-7 gap-1.5">
-                        {Array.from({ length: totalSlides }, (_, i) => i + 1).map((num) => (
-                          <button key={num} onClick={() => sendCommand("goto", num)}
-                            className={`aspect-square rounded-xl text-sm font-black flex flex-col items-center justify-center gap-0.5 cursor-pointer transition-all border ${
-                              currentSlide === num ? "slide-btn-active" : ""
-                            }`}
-                            style={currentSlide !== num ? { background: "rgba(255,255,255,0.04)", borderColor: "rgba(255,255,255,0.07)", color: "#64748b" } : {}}>
-                            <span>{num}</span>
-                            <span className="text-[7px] leading-none opacity-60">{getSlideInfo(num).emoji}</span>
+                    {/* Slide grid */}
+                    <div style={{ marginBottom: 14 }}>
+                      <div style={{ ...s.sectionLabel, marginBottom: 8 }}>스슬라이ড 선택</div>
+                      <div style={s.slideGrid}>
+                        {Array.from({ length: totalSlides }, (_, i) => i + 1).map(n => (
+                          <button key={n} onClick={() => sendCmd("goto", n)} className={`slide-btn ${currentSlide === n ? "slide-btn-active" : ""}`}
+                            style={{ ...s.slideBtn, ...(currentSlide === n ? s.slideBtnActive : {}) }}>
+                            <span style={{ fontSize: 9, lineHeight: 1 }}>{SLIDES[n]?.emoji}</span>
+                            <span style={{ fontSize: 11 }}>{n}</span>
                           </button>
                         ))}
                       </div>
                     </div>
 
-                    {/* Quick Jump */}
-                    <div>
-                      <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">⚡ দ্রুত জাম্প</div>
-                      <div className="grid grid-cols-1 gap-2">
+                    {/* Quick jumps */}
+                    <div style={{ marginBottom: 14 }}>
+                      <div style={s.sectionLabel}>⚡ গুরুত্বপূর্ণ স্লাইড</div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                         {[
-                          { slide: 6, label: "লাইভ ৩D কেমিক্যাল সিমুলেশন" },
-                          { slide: 9, label: "পরিবেশ ইমপ্যাক্ট ক্যালকুলেটর" },
-                          { slide: 11, label: "লাইভ মতামত পোল গ্রাফ" },
-                        ].map((j) => (
-                          <button key={j.slide} onClick={() => sendCommand("goto", j.slide)}
-                            className="w-full flex items-center justify-between p-3 rounded-xl text-xs font-bold cursor-pointer transition-all group"
-                            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", color: "#94a3b8" }}>
-                            <div className="flex items-center gap-2.5">
-                              <span className="text-base">{getSlideInfo(j.slide).emoji}</span>
-                              <span className="group-hover:text-white transition-colors">স্লাইড {j.slide}: {j.label}</span>
+                          { s: 6, label: "লাইভ 3D কেমিক্যাল সিমুলেশন" },
+                          { s: 9, label: "পরিবেশ ইমপ্যাক্ট ক্যালকুলেটর" },
+                          { s: 11, label: "লাইভ মতামত পোল গ্রাফ" },
+                        ].map(j => (
+                          <button key={j.s} onClick={() => sendCmd("goto", j.s)} className="quick-jump"
+                            style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 12px", borderRadius: 6, border: `1px solid ${C.border}`, background: "transparent", color: C.muted, cursor: "pointer", fontSize: 12, fontWeight: 600, textAlign: "left", transition: "all .15s" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <span>{SLIDES[j.s]?.emoji}</span>
+                              <span>স্লাইড {j.s}: {j.label}</span>
                             </div>
-                            <Zap className="w-3.5 h-3.5 text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <Zap size={11} color={C.green} />
                           </button>
                         ))}
                       </div>
@@ -803,23 +485,15 @@ export default function AdminPanel() {
 
                     {/* Timeline */}
                     <div>
-                      <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-1.5">
-                        <Activity className="w-3.5 h-3.5 text-emerald-500" /> লাইভ টাইমলাইন
-                      </div>
-                      <div className="space-y-3 max-h-44 overflow-y-auto scrollbar-dark">
+                      <div style={{ ...s.sectionLabel, display: "flex", alignItems: "center", gap: 6 }}><Activity size={10} /> লাইভ টাইমলাইন</div>
+                      <div style={{ maxHeight: 200, overflowY: "auto" }}>
                         {timelineEvents.length === 0 ? (
-                          <div className="text-center text-xs text-slate-600 py-4">কোনো কার্যকলাপ নেই।</div>
-                        ) : timelineEvents.map((ev) => (
-                          <div key={ev.id} className="timeline-line">
-                            <div className={`timeline-dot ${
-                              ev.type === "slide" ? "timeline-dot-slide"
-                              : ev.type === "vote" ? "timeline-dot-vote"
-                              : "timeline-dot-system"
-                            }`} />
-                            <div className="flex justify-between items-start gap-2">
-                              <span className="text-xs text-slate-300 font-semibold">{ev.event}</span>
-                              <span className="text-[10px] text-slate-600 font-mono shrink-0">{ev.time}</span>
-                            </div>
+                          <div style={{ textAlign: "center", color: C.dim, fontSize: 12, padding: "20px 0" }}>কোনো কার্যকলাপ নেই।</div>
+                        ) : timelineEvents.map(ev => (
+                          <div key={ev.id} style={{ display: "flex", gap: 10, padding: "6px 0", borderBottom: `1px solid rgba(255,255,255,0.04)` }}>
+                            <span style={{ width: 6, height: 6, borderRadius: "50%", background: ev.type === "slide" ? C.green : ev.type === "vote" ? C.orange : C.purple, flexShrink: 0, marginTop: 5 }} />
+                            <div style={{ flex: 1, fontSize: 11, color: C.muted, lineHeight: 1.5 }}>{ev.event}</div>
+                            <span style={{ fontSize: 10, color: C.dim, fontFamily: "monospace", flexShrink: 0 }}>{ev.time}</span>
                           </div>
                         ))}
                       </div>
@@ -827,160 +501,111 @@ export default function AdminPanel() {
                   </div>
                 )}
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Tab: Votes Log */}
-            {activeTab === "votes" && (
-              <div className="glass-card p-5">
-                <div className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                  <Users className="w-3.5 h-3.5 text-emerald-500" />
-                  সাম্প্রতিক মতামত ভোট
-                </div>
-                <div className="space-y-2 max-h-[500px] overflow-y-auto scrollbar-dark pr-1">
-                  {votes.feed.length === 0 ? (
-                    <div className="text-center py-16 text-slate-600">
-                      <BarChart3 className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                      <div className="text-sm font-semibold">এখনও কোনো ভোট জমা পড়েনি।</div>
-                    </div>
-                  ) : votes.feed.map((vote, idx) => (
-                    <div key={idx} className="flex justify-between items-center p-3 rounded-xl text-xs font-bold"
-                      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-xl flex items-center justify-center text-base"
-                          style={{ background: vote.type === "yes" ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)" }}>
-                          {vote.type === "yes" ? "👍" : "👎"}
-                        </div>
-                        <span className="text-slate-300">{vote.name}</span>
+          {/* ── TAB: Votes ── */}
+          {activeTab === "votes" && (
+            <div style={s.card}>
+              <div style={s.cardHead}><Users size={12} color={C.green} /> সাম্প্রতিক মতামত ভোট</div>
+              <div style={{ ...s.cardBody, maxHeight: 540, overflowY: "auto" }}>
+                {votes.feed.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "60px 0", color: C.dim }}>
+                    <BarChart3 size={32} style={{ margin: "0 auto 12px", opacity: 0.3 }} />
+                    <div style={{ fontSize: 13, fontWeight: 500 }}>এখনও কোনো ভোট জমা পড়েনি।</div>
+                  </div>
+                ) : votes.feed.map((v, i) => (
+                  <div key={i} style={{ ...s.logItem }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 16 }}>{v.type === "yes" ? "👍" : "👎"}</span>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: C.text }}>{v.name}</span>
                       </div>
-                      <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wide ${
-                        vote.type === "yes"
-                          ? "text-emerald-400"
-                          : "text-rose-400"
-                      }`}
-                        style={{ background: vote.type === "yes" ? "rgba(16,185,129,0.1)" : "rgba(239,68,68,0.1)" }}>
-                        {vote.type === "yes" ? "সমর্থন" : "দ্বিমত"}
+                      <span style={{ ...s.badge, background: v.type === "yes" ? C.greenBg : C.redBg, color: v.type === "yes" ? C.green : C.red, border: `1px solid ${v.type === "yes" ? C.greenBorder : C.redBorder}` }}>
+                        {v.type === "yes" ? "সমর্থন" : "দ্বিমত"}
                       </span>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Tab: AI Logs */}
-            {activeTab === "ai" && (
-              <div className="glass-card p-5">
-                <div className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                  <Brain className="w-3.5 h-3.5 text-purple-400" />
-                  AI কথোপকথন লগ
-                </div>
-                <div className="space-y-3 max-h-[500px] overflow-y-auto scrollbar-dark pr-1">
-                  {aiLogs.length === 0 ? (
-                    <div className="text-center py-16 text-slate-600">
-                      <Sparkles className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                      <div className="text-sm font-semibold">কোনো কথোপকথন রেকর্ড নেই।</div>
-                    </div>
-                  ) : aiLogs.map((log) => (
-                    <div key={log.id} className="p-4 rounded-xl space-y-2.5"
-                      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
-                      <div className="flex justify-between items-center">
-                        <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-1">
-                          👤 দর্শক প্রশ্ন
-                        </span>
-                        <span className="text-[9px] text-slate-600 font-mono">{log.timestamp}</span>
-                      </div>
-                      <div className="text-xs font-bold text-white p-2.5 rounded-lg"
-                        style={{ background: "rgba(255,255,255,0.05)" }}>{log.query}</div>
-                      <div className="text-[9px] font-black text-purple-400 uppercase tracking-widest flex items-center gap-1">
-                        <Sparkles className="w-3 h-3" /> AI উত্তর
-                      </div>
-                      <div className="text-xs text-slate-400 leading-relaxed">{log.response}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Tab: Settings */}
-            {activeTab === "settings" && (
-              <div className="glass-card p-5 space-y-5">
-                <div className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                  <Settings2 className="w-3.5 h-3.5 text-emerald-500" />
-                  AI মডেল ও ট্রেনিং কনসোল
-                </div>
-
-                {/* API Key Status */}
-                <div className="flex items-center justify-between p-3 rounded-xl"
-                  style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
-                  <div className="flex items-center gap-2 text-xs font-bold">
-                    <Key className="w-3.5 h-3.5 text-slate-400" />
-                    <span className="text-slate-400">OpenRouter API কী স্ট্যাটাস:</span>
                   </div>
-                  {hasKey ? (
-                    <span className="flex items-center gap-1.5 text-xs font-black text-emerald-400"
-                      style={{ background: "rgba(16,185,129,0.1)", padding: "4px 10px", borderRadius: "8px" }}>
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> সক্রিয়
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1.5 text-xs font-black text-amber-400"
-                      style={{ background: "rgba(245,158,11,0.1)", padding: "4px 10px", borderRadius: "8px" }}>
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" /> সেট করুন
-                    </span>
-                  )}
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── TAB: AI ── */}
+          {activeTab === "ai" && (
+            <div style={s.card}>
+              <div style={s.cardHead}><Brain size={12} color={C.purple} /> AI কথোপকথন লগ</div>
+              <div style={{ ...s.cardBody, maxHeight: 540, overflowY: "auto" }}>
+                {aiLogs.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "60px 0", color: C.dim }}>
+                    <MessageSquare size={32} style={{ margin: "0 auto 12px", opacity: 0.3 }} />
+                    <div style={{ fontSize: 13, fontWeight: 500 }}>কোনো কথোপকথন লগ নেই।</div>
+                  </div>
+                ) : aiLogs.map(log => (
+                  <div key={log.id} style={{ ...s.logItem, marginBottom: 10 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: C.muted, textTransform: "uppercase", letterSpacing: "0.06em" }}>👤 দর্শক প্রশ্ন</span>
+                      <span style={{ fontSize: 10, color: C.dim, fontFamily: "monospace" }}>{log.timestamp}</span>
+                    </div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: C.text, padding: "8px 10px", borderRadius: 6, background: "rgba(255,255,255,0.04)", marginBottom: 8 }}>{log.query}</div>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: C.purple, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6, display: "flex", alignItems: "center", gap: 4 }}><Sparkles size={10} /> AI উত্তর</div>
+                    <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.7 }}>{log.response}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── TAB: Settings ── */}
+          {activeTab === "settings" && (
+            <div style={s.card}>
+              <div style={s.cardHead}><Settings2 size={12} color={C.orange} /> AI মডেল ও ট্রেনিং কনসোল</div>
+              <div style={s.cardBody}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 12px", borderRadius: 6, background: "rgba(255,255,255,0.03)", border: `1px solid ${C.border}`, marginBottom: 16 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: C.muted }}>
+                    <Key size={12} /> OpenRouter API Key
+                  </div>
+                  <span style={{ ...s.badge, ...(hasKey ? { background: C.greenBg, borderColor: C.greenBorder, color: C.green } : { background: "rgba(227,179,65,0.1)", borderColor: "rgba(227,179,65,0.25)", color: C.orange }), border: "1px solid" }}>
+                    {hasKey ? "✓ সক্রিয়" : "⚠ সেট করুন"}
+                  </span>
                 </div>
 
-                <div className="space-y-4">
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                   <div>
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">OpenRouter API Key</label>
-                    <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)}
-                      placeholder="sk-or-v1-..."
-                      className="input-dark w-full text-xs px-4 py-3 font-mono" />
+                    <label style={{ ...s.sectionLabel, display: "block" }}>API Key</label>
+                    <input type="password" value={apiKey} onChange={e => setApiKey(e.target.value)} placeholder="sk-or-v1-..." className="input-field" style={{ ...s.input, fontFamily: "monospace" }} />
                   </div>
-
                   <div>
-                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">AI মডেল নির্বাচন</label>
-                    <select value={selectedModel} onChange={(e) => setSelectedModel(e.target.value)}
-                      className="select-dark w-full text-xs px-4 py-3 font-bold">
-                      <option value="google/gemini-2.5-flash">Gemini 2.5 Flash — সুপার ফাস্ট (মেলা ডেমো)</option>
+                    <label style={{ ...s.sectionLabel, display: "block" }}>AI মডেল</label>
+                    <select value={selectedModel} onChange={e => setSelectedModel(e.target.value)} style={s.select}>
+                      <option value="google/gemini-2.5-flash">Gemini 2.5 Flash — দ্রুত (মেলা ডেমো)</option>
                       <option value="google/gemini-2.5-pro">Gemini 2.5 Pro — জটিল প্রশ্ন</option>
-                      <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet — উন্নত বুদ্ধিমত্তা</option>
-                      <option value="openai/gpt-4o">GPT-4o — হাই পারফরম্যান্স</option>
-                      <option value="openai/gpt-4o-mini">GPT-4o Mini — ফাস্ট লাইট</option>
+                      <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet</option>
+                      <option value="openai/gpt-4o">GPT-4o</option>
+                      <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
                     </select>
                   </div>
-
                   <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest">AI ট্রেনিং প্রম্পট (Knowledge Base)</label>
-                      <span className="text-[9px] text-slate-600">{systemPrompt.length} অক্ষর</span>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                      <label style={{ ...s.sectionLabel, margin: 0 }}>AI ট্রেনিং প্রম্পট</label>
+                      <span style={{ fontSize: 10, color: C.dim }}>{systemPrompt.length} অক্ষর</span>
                     </div>
-                    <textarea value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)}
-                      rows={10}
-                      placeholder="এখানে AI-এর সম্পূর্ণ নলেজ ও নির্দেশনা লিখুন..."
-                      className="input-dark w-full text-xs px-4 py-3 font-medium leading-relaxed resize-y scrollbar-dark" />
+                    <textarea value={systemPrompt} onChange={e => setSystemPrompt(e.target.value)} rows={12} placeholder="AI-এর সম্পূর্ণ নলেজ ও নির্দেশনা লিখুন..." className="input-field" style={s.textarea} />
                   </div>
-
-                  <button onClick={saveConfigSettings} disabled={savingConfig}
-                    className="neon-btn w-full py-3 rounded-xl text-white text-sm font-black flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60">
-                    {savingConfig ? (
-                      <><RefreshCw className="w-4 h-4 animate-spin" /> সংরক্ষণ হচ্ছে...</>
-                    ) : (
-                      <><CheckCircle2 className="w-4 h-4" /> কনফিগারেশন সেভ করুন</>
-                    )}
+                  <button onClick={saveConfig} disabled={savingConfig} style={s.btnGreen} className="btn-green">
+                    {savingConfig ? <><RefreshCw size={13} className="spin" /> সংরক্ষণ হচ্ছে...</> : <><CheckCircle2 size={13} /> কনফিগারেশন সেভ করুন</>}
                   </button>
                 </div>
               </div>
-            )}
-
-          </div>
+            </div>
+          )}
         </div>
-      </main>
+      </div>
 
       {/* Footer */}
-      <footer className="mt-8 py-5 text-center relative z-10" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-        <div className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">
-          © 2026 এ্যারোস্টোন • যশোর পলিটেকনিক ইনস্টিটিউট • Science Fair Admin Console
-        </div>
-      </footer>
+      <div style={{ textAlign: "center", padding: "20px 0 32px", fontSize: 11, color: C.dim, borderTop: `1px solid ${C.border}`, marginTop: 8 }}>
+        © 2026 এ্যারোস্টোন • যশোর পলিটেকনিক ইনস্টিটিউট • Science Fair Admin Console
+      </div>
     </div>
   );
 }
