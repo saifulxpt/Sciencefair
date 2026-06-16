@@ -137,13 +137,13 @@ export default function Simulation() {
 
             {/* Microscopic Surface Catalyst Active Dots */}
             <g id="catalyst-layer">
-              <circle cx="60" cy="180" r="6" fill="#10b981" opacity="0.6" filter={isSunlightOn ? "url(#glowGreen)" : ""} />
-              <circle cx="120" cy="180" r="6" fill="#10b981" opacity="0.6" filter={isSunlightOn ? "url(#glowGreen)" : ""} />
-              <circle cx="180" cy="180" r="6" fill="#10b981" opacity="0.6" filter={isSunlightOn ? "url(#glowGreen)" : ""} />
-              <circle cx="240" cy="180" r="6" fill="#10b981" opacity="0.6" filter={isSunlightOn ? "url(#glowGreen)" : ""} />
-              <circle cx="300" cy="180" r="6" fill="#10b981" opacity="0.6" filter={isSunlightOn ? "url(#glowGreen)" : ""} />
-              <circle cx="360" cy="180" r="6" fill="#10b981" opacity="0.6" filter={isSunlightOn ? "url(#glowGreen)" : ""} />
-              <circle cx="420" cy="180" r="6" fill="#10b981" opacity="0.6" filter={isSunlightOn ? "url(#glowGreen)" : ""} />
+              <circle cx="60" cy="180" r="6" fill="#2563eb" opacity="0.6" filter={isSunlightOn ? "url(#glowGreen)" : ""} />
+              <circle cx="120" cy="180" r="6" fill="#2563eb" opacity="0.6" filter={isSunlightOn ? "url(#glowGreen)" : ""} />
+              <circle cx="180" cy="180" r="6" fill="#2563eb" opacity="0.6" filter={isSunlightOn ? "url(#glowGreen)" : ""} />
+              <circle cx="240" cy="180" r="6" fill="#2563eb" opacity="0.6" filter={isSunlightOn ? "url(#glowGreen)" : ""} />
+              <circle cx="300" cy="180" r="6" fill="#2563eb" opacity="0.6" filter={isSunlightOn ? "url(#glowGreen)" : ""} />
+              <circle cx="360" cy="180" r="6" fill="#2563eb" opacity="0.6" filter={isSunlightOn ? "url(#glowGreen)" : ""} />
+              <circle cx="420" cy="180" r="6" fill="#2563eb" opacity="0.6" filter={isSunlightOn ? "url(#glowGreen)" : ""} />
             </g>
 
             {/* Step 1: Charge Separation Animation */}
@@ -180,10 +180,10 @@ export default function Simulation() {
                 <text x="60" y="113" fill="#94a3b8" fontSize="8" fontWeight="bold" textAnchor="middle">H₂O</text>
 
                 {/* Hydroxyl radical forming */}
-                <circle cx="145" cy="140" r="10" fill="#10b981" filter="url(#glowGreen)" />
+                <circle cx="145" cy="140" r="10" fill="#2563eb" filter="url(#glowGreen)" />
                 <text x="145" y="143" fill="#fff" fontSize="8" fontWeight="black" textAnchor="middle">·OH</text>
                 
-                <path d="M 120,180 L 145,150" stroke="#10b981" strokeWidth="1" opacity="0.6" />
+                <path d="M 120,180 L 145,150" stroke="#2563eb" strokeWidth="1" opacity="0.6" />
               </g>
             )}
 
@@ -196,7 +196,7 @@ export default function Simulation() {
                 <text x="300" y="93" fill="#94a3b8" fontSize="8" fontWeight="bold" textAnchor="middle">O₂</text>
 
                 {/* Superoxide radical forming */}
-                <circle cx="210" cy="130" r="10" fill="#10b981" filter="url(#glowGreen)" />
+                <circle cx="210" cy="130" r="10" fill="#2563eb" filter="url(#glowGreen)" />
                 <text x="210" y="133" fill="#fff" fontSize="7" fontWeight="black" textAnchor="middle">O₂·⁻</text>
               </g>
             )}
@@ -216,16 +216,16 @@ export default function Simulation() {
                 {isSunlightOn ? (
                   <>
                     {/* Interaction zone */}
-                    <circle cx="350" cy="120" r="18" fill="rgba(16,185,129,0.1)" stroke="rgba(16,185,129,0.3)" strokeDasharray="2 2" />
+                    <circle cx="350" cy="120" r="18" fill="rgba(37,99,235,0.1)" stroke="rgba(37,99,235,0.3)" strokeDasharray="2 2" />
                     
                     {/* Reaction path from NOx and Radical to Nitrates */}
                     <path d="M 380,70 L 350,120 M 360,160 L 350,120" stroke="#f59e0b" strokeWidth="1" />
 
                     {/* Formed Nitrate (NO3-) washing/sitting on block */}
                     <g>
-                      <circle cx="330" cy="180" r="9" fill="#1e293b" stroke="#10b981" strokeWidth="1.5" />
-                      <text x="330" y="183" fill="#34d399" fontSize="7" fontWeight="black" textAnchor="middle">NO₃⁻</text>
-                      <path d="M 330,189 L 330,205" stroke="#10b981" strokeWidth="1" strokeDasharray="2 2" />
+                      <circle cx="330" cy="180" r="9" fill="#1e293b" stroke="#2563eb" strokeWidth="1.5" />
+                      <text x="330" y="183" fill="#3b82f6" fontSize="7" fontWeight="black" textAnchor="middle">NO₃⁻</text>
+                      <path d="M 330,189 L 330,205" stroke="#2563eb" strokeWidth="1" strokeDasharray="2 2" />
                       <text x="330" y="215" fill="#64748b" fontSize="7" textAnchor="middle">Rain/Washed</text>
                     </g>
                     

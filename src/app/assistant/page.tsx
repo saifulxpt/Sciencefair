@@ -216,12 +216,12 @@ export default function VoiceAssistant() {
             const barHeight = (dataArray[i] / 255) * h * 0.85 + 2;
 
             const gradient = ctx.createLinearGradient(0, h, 0, 0);
-            gradient.addColorStop(0, "rgba(16, 185, 129, 0.15)");
-            gradient.addColorStop(0.5, "rgba(16, 185, 129, 0.7)");
-            gradient.addColorStop(1, "rgba(2, 132, 199, 0.95)");
+            gradient.addColorStop(0, "rgba(37, 99, 235, 0.15)");
+            gradient.addColorStop(0.5, "rgba(37, 99, 235, 0.7)");
+            gradient.addColorStop(1, "rgba(14, 165, 233, 0.95)");
 
             ctx.fillStyle = gradient;
-            ctx.shadowColor = "rgba(16, 185, 129, 0.4)";
+            ctx.shadowColor = "rgba(37, 99, 235, 0.4)";
             ctx.shadowBlur = 8;
 
             const drawY = h / 2 - barHeight / 2;
@@ -236,8 +236,8 @@ export default function VoiceAssistant() {
           phase += 0.15;
           ctx.beginPath();
           ctx.lineWidth = 3;
-          ctx.strokeStyle = "rgba(16, 185, 129, 0.75)";
-          ctx.shadowColor = "rgba(16, 185, 129, 0.5)";
+          ctx.strokeStyle = "rgba(37, 99, 235, 0.75)";
+          ctx.shadowColor = "rgba(37, 99, 235, 0.5)";
           ctx.shadowBlur = 10;
 
           for (let x = 0; x < w; x++) {
@@ -255,8 +255,8 @@ export default function VoiceAssistant() {
         ctx.shadowBlur = 4;
 
         const waves = [
-          { amp: 22, freq: 0.015, color: "rgba(16, 185, 129, 0.65)", speed: 0.07 },
-          { amp: 16, freq: 0.025, color: "rgba(2, 132, 199, 0.65)", speed: -0.04 },
+          { amp: 22, freq: 0.015, color: "rgba(37, 99, 235, 0.65)", speed: 0.07 },
+          { amp: 16, freq: 0.025, color: "rgba(14, 165, 233, 0.65)", speed: -0.04 },
           { amp: 10, freq: 0.035, color: "rgba(139, 92, 246, 0.5)", speed: 0.09 }
         ];
 
@@ -301,8 +301,8 @@ export default function VoiceAssistant() {
         phase += 0.03;
         ctx.beginPath();
         ctx.lineWidth = 2.5;
-        ctx.strokeStyle = "rgba(16, 185, 129, 0.35)";
-        ctx.shadowColor = "rgba(16, 185, 129, 0.2)";
+        ctx.strokeStyle = "rgba(37, 99, 235, 0.35)";
+        ctx.shadowColor = "rgba(37, 99, 235, 0.2)";
         ctx.shadowBlur = 6;
 
         for (let x = 0; x < w; x++) {
@@ -562,7 +562,7 @@ export default function VoiceAssistant() {
                     }
                   }}
                   className={`w-9 h-5 rounded-full p-0.5 transition-colors duration-200 ease-in-out focus:outline-none flex items-center`}
-                  style={{ backgroundColor: voiceEnabled ? '#10b981' : '#cbd5e1' }}
+                  style={{ backgroundColor: voiceEnabled ? '#2563eb' : '#cbd5e1' }}
                 >
                   <div
                     className={`w-4 h-4 rounded-full bg-white shadow-md transform duration-200 ease-in-out ${

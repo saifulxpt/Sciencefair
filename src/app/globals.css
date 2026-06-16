@@ -7,21 +7,21 @@
   --bg-main: #f1f5f9;
   --bg-secondary: #ffffff;
   --bg-card: rgba(255, 255, 255, 0.85);
-  --border-card: rgba(16, 185, 129, 0.12);
-  --border-card-hover: rgba(16, 185, 129, 0.4);
+  --border-card: rgba(37, 99, 235, 0.12);
+  --border-card-hover: rgba(37, 99, 235, 0.4);
   
   --color-text-primary: #0f172a;
   --color-text-secondary: #334155;
   --color-text-muted: #64748b;
   
   /* Accent Colors */
-  --color-primary: #059669; /* Rich Emerald green for high contrast in light theme */
-  --color-primary-glow: rgba(5, 150, 105, 0.15);
-  --color-primary-bg: rgba(5, 150, 105, 0.05);
+  --color-primary: #2563eb; /* Rich Royal Blue for high contrast in light theme */
+  --color-primary-glow: rgba(37, 99, 235, 0.15);
+  --color-primary-bg: rgba(37, 99, 235, 0.05);
   
-  --color-secondary: #0284c7; /* Sky blue */
-  --color-secondary-glow: rgba(2, 132, 199, 0.15);
-  --color-secondary-bg: rgba(2, 132, 199, 0.05);
+  --color-secondary: #0ea5e9; /* Sky blue */
+  --color-secondary-glow: rgba(14, 165, 233, 0.15);
+  --color-secondary-bg: rgba(14, 165, 233, 0.05);
   
   --color-accent: #d97706; /* Amber */
   --color-accent-glow: rgba(217, 119, 6, 0.15);
@@ -48,8 +48,8 @@ html {
 body {
   background-color: var(--bg-main);
   background-image: 
-    radial-gradient(circle at 10% 20%, rgba(16, 185, 129, 0.06) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(2, 132, 199, 0.06) 0%, transparent 45%);
+    radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.04) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(14, 165, 233, 0.04) 0%, transparent 45%);
   background-attachment: fixed;
   color: var(--color-text-primary);
   font-family: var(--font-sans);
@@ -446,9 +446,9 @@ body {
    ========================================== */
 
 /* Text Colors */
-.text-emerald-400, .text-emerald-500 { color: #047857 !important; }
-.text-emerald-600 { color: #065f46 !important; }
-.text-emerald-700 { color: #047857 !important; }
+.text-emerald-400, .text-emerald-500 { color: #2563eb !important; }
+.text-emerald-600 { color: #1d4ed8 !important; }
+.text-emerald-700 { color: #1e40af !important; }
 .text-sky-400, .text-sky-500 { color: #0284c7 !important; }
 .text-sky-600 { color: #0369a1 !important; }
 .text-amber-400, .text-amber-500 { color: #d97706 !important; }
@@ -459,8 +459,8 @@ body {
 .text-white { color: #ffffff !important; }
 
 /* Backgrounds */
-.bg-emerald-500 { background-color: #10b981 !important; }
-.bg-emerald-600 { background-color: #059669 !important; }
+.bg-emerald-500 { background-color: #3b82f6 !important; }
+.bg-emerald-600 { background-color: #2563eb !important; }
 .bg-sky-500 { background-color: #0ea5e9 !important; }
 .bg-amber-500 { background-color: #f59e0b !important; }
 .bg-purple-500 { background-color: #8b5cf6 !important; }
@@ -468,8 +468,8 @@ body {
 .bg-slate-50 { background-color: #f8fafc !important; }
 .bg-white { background-color: #ffffff !important; }
 
-.bg-emerald-500\/20, .bg-emerald-500\/10, .bg-emerald-950\/20 {
-  background-color: rgba(16, 185, 129, 0.08) !important;
+.bg-emerald-500\/20, .bg-emerald-500\/10, .bg-emerald-950\/20, .bg-emerald-100 {
+  background-color: rgba(37, 99, 235, 0.08) !important;
 }
 .bg-sky-500\/10 {
   background-color: rgba(2, 132, 199, 0.08) !important;
@@ -490,7 +490,7 @@ body {
 
 /* Borders */
 .border-emerald-500\/20, .border-emerald-500\/30, .border-emerald-900\/30 {
-  border: 1px solid rgba(16, 185, 129, 0.2) !important;
+  border: 1px solid rgba(37, 99, 235, 0.15) !important;
 }
 .border-sky-500\/20 {
   border: 1px solid rgba(2, 132, 199, 0.2) !important;
@@ -510,13 +510,13 @@ body {
   background-size: cover;
 }
 .from-emerald-500.to-sky-400 {
-  background: linear-gradient(135deg, #059669 0%, #0284c7 100%) !important;
+  background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%) !important;
 }
 .from-emerald-400.to-sky-400 {
-  background: linear-gradient(90deg, #059669 0%, #0284c7 100%) !important;
+  background: linear-gradient(90deg, #3b82f6 0%, #0ea5e9 100%) !important;
 }
 .from-emerald-500.to-emerald-700 {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
 }
 
 .bg-clip-text {
@@ -604,9 +604,9 @@ body {
   width: 160px;
   height: 160px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(2, 132, 199, 0.12) 60%, transparent 100%);
-  border: 2px solid rgba(16, 185, 129, 0.25);
-  box-shadow: 0 0 40px rgba(16, 185, 129, 0.15), inset 0 0 20px rgba(2, 132, 199, 0.15);
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.25) 0%, rgba(14, 165, 233, 0.12) 60%, transparent 100%);
+  border: 2px solid rgba(37, 99, 235, 0.25);
+  box-shadow: 0 0 40px rgba(37, 99, 235, 0.15), inset 0 0 20px rgba(14, 165, 233, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -616,34 +616,34 @@ body {
 
 .voice-orb.listening {
   animation: orbPulse 1.2s ease-in-out infinite;
-  background: radial-gradient(circle, rgba(16, 185, 129, 0.45) 0%, rgba(2, 132, 199, 0.25) 50%, transparent 100%) !important;
-  border-color: rgba(16, 185, 129, 0.5) !important;
-  box-shadow: 0 0 50px rgba(16, 185, 129, 0.35), inset 0 0 25px rgba(2, 132, 199, 0.25) !important;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.45) 0%, rgba(14, 165, 233, 0.25) 50%, transparent 100%) !important;
+  border-color: rgba(37, 99, 235, 0.5) !important;
+  box-shadow: 0 0 50px rgba(37, 99, 235, 0.35), inset 0 0 25px rgba(14, 165, 233, 0.25) !important;
 }
 
 .voice-orb.processing {
   animation: orbProcessing 2s linear infinite;
-  background: radial-gradient(circle, rgba(2, 132, 199, 0.45) 0%, rgba(139, 92, 246, 0.25) 50%, transparent 100%) !important;
-  border-color: rgba(2, 132, 199, 0.5) !important;
-  box-shadow: 0 0 50px rgba(2, 132, 199, 0.35), inset 0 0 25px rgba(139, 92, 246, 0.25) !important;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.45) 0%, rgba(139, 92, 246, 0.25) 50%, transparent 100%) !important;
+  border-color: rgba(14, 165, 233, 0.5) !important;
+  box-shadow: 0 0 50px rgba(14, 165, 233, 0.35), inset 0 0 25px rgba(139, 92, 246, 0.25) !important;
 }
 
 .voice-orb-glow {
   position: absolute;
   inset: -12px;
   border-radius: 50%;
-  border: 2px dashed rgba(16, 185, 129, 0.12);
+  border: 2px dashed rgba(37, 99, 235, 0.12);
   animation: rotate-slow 25s linear infinite;
   pointer-events: none;
 }
 
 .voice-orb-glow.listening {
-  border-color: rgba(16, 185, 129, 0.35) !important;
+  border-color: rgba(37, 99, 235, 0.35) !important;
   animation: rotate-slow 10s linear infinite;
 }
 
 .voice-orb-glow.processing {
-  border-color: rgba(2, 132, 199, 0.35) !important;
+  border-color: rgba(14, 165, 233, 0.35) !important;
   animation: rotate-slow 3s linear infinite;
 }
 
@@ -725,10 +725,10 @@ body {
 
 .chat-bubble.user {
   align-self: flex-end;
-  background: #10b981;
+  background: #2563eb;
   color: #ffffff !important;
   border-bottom-right-radius: 4px;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
 }
 
 .chat-bubble.ai {
@@ -763,13 +763,13 @@ body {
 }
 
 .chat-input:focus {
-  border-color: #10b981;
+  border-color: #2563eb;
   background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .chat-send-btn {
-  background: #10b981;
+  background: #2563eb;
   color: #ffffff;
   border: none;
   width: 38px;
@@ -783,7 +783,7 @@ body {
 }
 
 .chat-send-btn:hover {
-  background: #059669;
+  background: #1d4ed8;
   transform: scale(1.05);
 }
 

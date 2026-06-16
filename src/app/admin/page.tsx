@@ -28,9 +28,9 @@ function Toast({ message, type, onClose }: { message: string; type: "success" | 
       position: "fixed", bottom: 24, right: 24, zIndex: 9999,
       display: "flex", alignItems: "center", gap: 10,
       padding: "12px 20px", borderRadius: 14,
-      background: type === "success" ? "rgba(16,185,129,0.12)" : "rgba(239,68,68,0.12)",
-      border: `1px solid ${type === "success" ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.3)"}`,
-      color: type === "success" ? "#34d399" : "#f87171",
+      background: type === "success" ? "rgba(37,99,235,0.08)" : "rgba(220,38,38,0.08)",
+      border: `1px solid ${type === "success" ? "rgba(37,99,235,0.2)" : "rgba(220,38,38,0.2)"}`,
+      color: type === "success" ? "#2563eb" : "#dc2626",
       fontSize: 13, fontWeight: 700,
       backdropFilter: "blur(20px)",
       boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
@@ -175,13 +175,13 @@ export default function AdminPanel() {
   };
 
   const C = {
-    bg: "#0d1117", card: "#161b22", border: "#21262d", borderHover: "#30363d",
-    text: "#e6edf3", muted: "#7d8590", dim: "#484f58",
-    green: "#3fb950", greenBg: "rgba(63,185,80,0.12)", greenBorder: "rgba(63,185,80,0.25)",
-    blue: "#58a6ff", blueBg: "rgba(88,166,255,0.1)", blueBorder: "rgba(88,166,255,0.25)",
-    purple: "#bc8cff", purpleBg: "rgba(188,140,255,0.1)", purpleBorder: "rgba(188,140,255,0.25)",
-    orange: "#e3b341", orangeBg: "rgba(227,179,65,0.1)", orangeBorder: "rgba(227,179,65,0.25)",
-    red: "#f85149", redBg: "rgba(248,81,73,0.1)", redBorder: "rgba(248,81,73,0.25)",
+    bg: "#f8fafc", card: "#ffffff", border: "#e2e8f0", borderHover: "#cbd5e1",
+    text: "#0f172a", muted: "#475569", dim: "#64748b",
+    green: "#2563eb", greenBg: "rgba(37,99,235,0.08)", greenBorder: "rgba(37,99,235,0.25)",
+    blue: "#0ea5e9", blueBg: "rgba(14,165,233,0.08)", blueBorder: "rgba(14,165,233,0.2)",
+    purple: "#7c3aed", purpleBg: "rgba(124,58,237,0.08)", purpleBorder: "rgba(124,58,237,0.2)",
+    orange: "#ea580c", orangeBg: "rgba(234,88,12,0.08)", orangeBorder: "rgba(234,88,12,0.2)",
+    red: "#dc2626", redBg: "rgba(220,38,38,0.08)", redBorder: "rgba(220,38,38,0.2)",
   };
 
   const s: Record<string, React.CSSProperties> = {
@@ -225,20 +225,20 @@ export default function AdminPanel() {
         @keyframes spin { to{transform:rotate(360deg)} }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
         .spin { animation: spin 1s linear infinite; }
-        a:hover .nav-lnk-inner, button.nav-hover:hover { background: rgba(255,255,255,0.04) !important; color: #e6edf3 !important; }
-        .hdr-link:hover { background: rgba(255,255,255,0.06) !important; color: #e6edf3 !important; }
-        .slide-btn:hover:not(.slide-btn-active) { border-color: #30363d !important; background: rgba(255,255,255,0.05) !important; color: #e6edf3 !important; }
-        .tab-btn:hover:not(.tab-active) { background: rgba(255,255,255,0.04) !important; color: #e6edf3 !important; }
-        .input-field:focus { border-color: #3fb950 !important; }
-        .btn-gh:hover { background: rgba(255,255,255,0.06) !important; color: #e6edf3 !important; }
-        .btn-red:hover { background: rgba(248,81,73,0.18) !important; }
+        a:hover .nav-lnk-inner, button.nav-hover:hover { background: rgba(15,23,42,0.04) !important; color: #0f172a !important; }
+        .hdr-link:hover { background: rgba(15,23,42,0.06) !important; color: #0f172a !important; }
+        .slide-btn:hover:not(.slide-btn-active) { border-color: #cbd5e1 !important; background: rgba(15,23,42,0.03) !important; color: #0f172a !important; }
+        .tab-btn:hover:not(.tab-active) { background: rgba(15,23,42,0.04) !important; color: #0f172a !important; }
+        .input-field:focus { border-color: #2563eb !important; }
+        .btn-gh:hover { background: rgba(15,23,42,0.05) !important; color: #0f172a !important; }
+        .btn-red:hover { background: rgba(220,38,38,0.12) !important; }
         .btn-green:hover { opacity: 0.9; }
-        .quick-jump:hover { background: rgba(255,255,255,0.04) !important; border-color: #30363d !important; }
-        .nav-link-item:hover { background: rgba(255,255,255,0.04) !important; border-color: #30363d !important; color: #e6edf3 !important; }
+        .quick-jump:hover { background: rgba(15,23,42,0.04) !important; border-color: #cbd5e1 !important; }
+        .nav-link-item:hover { background: rgba(15,23,42,0.04) !important; border-color: #cbd5e1 !important; color: #0f172a !important; }
         input, textarea, select { box-sizing: border-box; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
         @media (max-width: 900px) {
           .admin-grid { grid-template-columns: 1fr !important; }
           .admin-sidebar { display: none !important; }

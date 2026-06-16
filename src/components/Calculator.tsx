@@ -351,7 +351,7 @@ export default function Calculator() {
                   <span className="w-2.5 h-0.5 bg-rose-500 inline-block"></span> Untreated City Air
                 </span>
                 <span className="flex items-center gap-1">
-                  <span className="w-2.5 h-0.5 bg-emerald-400 inline-block"></span> Purified Concrete Zone
+                  <span className="w-2.5 h-0.5 bg-emerald-500 inline-block"></span> Purified Concrete Zone
                 </span>
               </div>
             </div>
@@ -389,10 +389,10 @@ export default function Calculator() {
                   <circle key={`raw-${i}`} cx={c.x} cy={c.y} r="3" fill="#ef4444" stroke="#ffffff" strokeWidth="1" />
                 ))}
 
-                {/* Treated line (Emerald) */}
-                <path d={makePath(svgCoordinates.treatedCoords)} fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinecap="round" />
+                {/* Treated line (Blue) */}
+                <path d={makePath(svgCoordinates.treatedCoords)} fill="none" stroke="#2563eb" strokeWidth="2.5" strokeLinecap="round" />
                 {svgCoordinates.treatedCoords.map((c, i) => (
-                  <circle key={`tr-${i}`} cx={c.x} cy={c.y} r="3" fill="#10b981" stroke="#ffffff" strokeWidth="1" />
+                  <circle key={`tr-${i}`} cx={c.x} cy={c.y} r="3" fill="#2563eb" stroke="#ffffff" strokeWidth="1" />
                 ))}
               </svg>
             </div>
