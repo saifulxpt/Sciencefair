@@ -57,6 +57,8 @@ export default function VoiceAssistant() {
   const analyserRef = useRef<AnalyserNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const animationRef = useRef<number | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioQueueRef = useRef<string[]>([]);
 
   // Initialize Welcome Message, Speech Recognition & Synthesis on mount
   useEffect(() => {
@@ -331,20 +333,50 @@ export default function VoiceAssistant() {
     if (synthRef.current) {
       synthRef.current.cancel();
     }
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    audioQueueRef.current = [];
   };
 
-  // Speak text output
-  const speakText = (text: string) => {
-    stopSpeaking();
-    if (isMuted || !synthRef.current || !voiceEnabled) return;
+  const playNextChunk = () => {
+    if (audioQueueRef.current.length === 0) {
+      setStatus("idle");
+      return;
+    }
     
-    const cleanedText = text.replace(/[*#_\-`]/g, "");
-    const utterance = new SpeechSynthesisUtterance(cleanedText);
+    const nextText = audioQueueRef.current.shift()!;
+    const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=bn&client=tw-ob&q=${encodeURIComponent(nextText)}`;
+    
+    const audio = new Audio(url);
+    audioRef.current = audio;
+    
+    audio.onended = () => {
+      playNextChunk();
+    };
+    
+    audio.onerror = (e) => {
+      console.warn("Google TTS error, falling back to Web Speech API", e);
+      speakWebSpeech(nextText + " " + audioQueueRef.current.join(" "));
+    };
+    
+    audio.play().catch(err => {
+      console.warn("Autoplay blocked or play failed, falling back to Web Speech API", err);
+      speakWebSpeech(nextText + " " + audioQueueRef.current.join(" "));
+    });
+  };
+
+  const speakWebSpeech = (text: string) => {
+    if (!synthRef.current) {
+      setStatus("idle");
+      return;
+    }
+    const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "bn-BD";
-    utterance.rate = 0.95; // Slightly slower speed for clearer, more natural Bangla pronunciation
+    utterance.rate = 0.95;
     
     const voices = synthRef.current.getVoices();
-    // Prioritize Google's cloud Bangla voice for a premium natural sound
     let bnVoice = voices.find(v => v.lang.includes("bn") && v.name.includes("Google"));
     if (!bnVoice) {
       bnVoice = voices.find(v => v.lang.includes("bn-BD") || v.lang.includes("bn-IN") || v.lang.startsWith("bn"));
@@ -356,13 +388,38 @@ export default function VoiceAssistant() {
     
     utterance.onstart = () => setStatus("speaking");
     utterance.onend = () => setStatus("idle");
-    utterance.onerror = (e) => {
-      console.error("Speech Synthesis Error:", e);
-      setStatus("idle");
-    };
+    utterance.onerror = () => setStatus("idle");
     
     utteranceRef.current = utterance;
     synthRef.current.speak(utterance);
+  };
+
+  // Speak text output
+  const speakText = (text: string) => {
+    stopSpeaking();
+    if (isMuted || !voiceEnabled) return;
+    
+    const cleanedText = text.replace(/[*#_\-`]/g, "");
+    
+    // Split into 180 character chunks for Google Translate TTS compat
+    const sentences = cleanedText.match(/[^।?!.,;]+[।?!.,;]*/g) || [cleanedText];
+    const chunks: string[] = [];
+    
+    let currentChunk = "";
+    for (const sentence of sentences) {
+      if ((currentChunk + sentence).length > 180) {
+        if (currentChunk.trim()) chunks.push(currentChunk.trim());
+        currentChunk = sentence;
+      } else {
+        currentChunk += sentence;
+      }
+    }
+    if (currentChunk.trim()) chunks.push(currentChunk.trim());
+    
+    audioQueueRef.current = chunks;
+    
+    setStatus("speaking");
+    playNextChunk();
   };
 
   // Toggle voice recognition
