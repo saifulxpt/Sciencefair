@@ -1,35 +1,14 @@
 "use client";
-/************************************************************************
- * AeroStone World-Class Admin Dashboard Panel
- * Coordinates slide transitions via Pusher channels and presents
- * real-time voter statistics, session timelines, and AI dialogues.
- * Designed with a high-end glassmorphic visual language, 
- * rotating aurora graphics, and responsive grid panels.
- ************************************************************************/
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Pusher from "pusher-js";
-import { 
-  Sliders, 
-  Layers, 
-  ArrowRight, 
-  Tv, 
-  Smartphone, 
-  Vote, 
-  Sparkles,
-  Play,
-  Pause,
-  RefreshCw,
-  Trash2,
-  Plus,
-  CheckCircle2,
-  Users,
-  Key,
-  Database,
-  ArrowUpRight,
-  MessageSquare,
-  Activity,
-  Info
+import {
+  Sliders, Layers, ArrowRight, Tv, Smartphone, Sparkles,
+  Play, Pause, RefreshCw, Trash2, Plus, CheckCircle2, Users,
+  Key, Database, ArrowUpRight, MessageSquare, Activity, Info,
+  ChevronLeft, ChevronRight, Wifi, WifiOff, BarChart3, Brain,
+  Zap, Shield, Clock, TrendingUp, Eye, Settings2, LogOut,
+  AlertCircle, Check, X
 } from "lucide-react";
 
 interface TimelineEvent {
@@ -37,6 +16,26 @@ interface TimelineEvent {
   event: string;
   time: string;
   type: "slide" | "vote" | "system";
+}
+
+type TabType = "control" | "votes" | "ai" | "settings";
+
+function Toast({ message, type, onClose }: { message: string; type: "success" | "error"; onClose: () => void }) {
+  useEffect(() => {
+    const t = setTimeout(onClose, 3000);
+    return () => clearTimeout(t);
+  }, [onClose]);
+  return (
+    <div className={`fixed bottom-6 right-6 z-[200] flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl text-sm font-bold backdrop-blur-xl border animate-slide-up ${
+      type === "success"
+        ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-300"
+        : "bg-rose-500/20 border-rose-500/30 text-rose-300"
+    }`}>
+      {type === "success" ? <Check className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
+      {message}
+      <button onClick={onClose} className="ml-2 opacity-60 hover:opacity-100 cursor-pointer"><X className="w-3.5 h-3.5" /></button>
+    </div>
+  );
 }
 
 export default function AdminPanel() {
@@ -56,11 +55,21 @@ export default function AdminPanel() {
   const [hasKey, setHasKey] = useState(false);
   const [selectedModel, setSelectedModel] = useState("google/gemini-2.5-flash");
   const [systemPrompt, setSystemPrompt] = useState("");
-
-  // Timeline events log stream
   const [timelineEvents, setTimelineEvents] = useState<TimelineEvent[]>([]);
+  const [activeTab, setActiveTab] = useState<TabType>("control");
+  const [savingConfig, setSavingConfig] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
-  // Load configuration details on load
+  const showToast = (message: string, type: "success" | "error") => {
+    setToast({ message, type });
+  };
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   useEffect(() => {
     const fetchConfig = async () => {
       try {
@@ -68,98 +77,68 @@ export default function AdminPanel() {
         const data = await res.json();
         if (data.status === "success") {
           setHasKey(data.has_key);
-          if (data.masked_key) {
-            setApiKey(data.masked_key);
-          }
-          if (data.model) {
-            setSelectedModel(data.model);
-          }
-          if (data.system_prompt) {
-            setSystemPrompt(data.system_prompt);
-          }
+          if (data.masked_key) setApiKey(data.masked_key);
+          if (data.model) setSelectedModel(data.model);
+          if (data.system_prompt) setSystemPrompt(data.system_prompt);
         }
-      } catch (e) {
-        console.error("Failed to load configs", e);
-      }
+      } catch (e) {}
     };
     fetchConfig();
   }, []);
 
   const saveConfigSettings = async () => {
+    setSavingConfig(true);
     try {
       const res = await fetch("/api/assistant/config", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          key: apiKey,
-          model: selectedModel,
-          prompt: systemPrompt
-        })
+        body: JSON.stringify({ key: apiKey, model: selectedModel, prompt: systemPrompt })
       });
       const data = await res.json();
       if (data.status === "success") {
-        alert("এআই মডেল এবং কাস্টম ট্রেনিং কনফিগারেশন সফলভাবে সংরক্ষণ করা হয়েছে!");
-        logEvent("এআই মডেল এবং কাস্টম ট্রেনিং আপডেট করা হয়েছে।", "system");
-        
-        // Refresh key status
+        showToast("কনফিগারেশন সফলভাবে সংরক্ষিত হয়েছে!", "success");
+        logEvent("এআই মডেল ও ট্রেনিং আপডেট করা হয়েছে।", "system");
         const resConfig = await fetch("/api/assistant/config");
         const dataConfig = await resConfig.json();
         if (dataConfig.status === "success") {
           setHasKey(dataConfig.has_key);
-          if (dataConfig.masked_key) {
-            setApiKey(dataConfig.masked_key);
-          }
+          if (dataConfig.masked_key) setApiKey(dataConfig.masked_key);
         }
       } else {
-        alert("কনফিগারেশন সংরক্ষণ করা সম্ভব হয়নি।");
+        showToast("কনফিগারেশন সংরক্ষণ করা সম্ভব হয়নি।", "error");
       }
     } catch (e) {
-      alert("সার্ভার ত্রুটি। দয়া করে আবার চেষ্টা করুন।");
+      showToast("সার্ভার ত্রুটি।", "error");
+    } finally {
+      setSavingConfig(false);
     }
   };
 
-  // Fetch live votes and AI conversation logs on mount & poll every 3s
   useEffect(() => {
     const fetchVotes = async () => {
       try {
         const res = await fetch("/api/vote/fetch?t=" + Date.now());
         const data = await res.json();
         setVotes(data);
-      } catch (e) {
-        console.error("Failed to fetch votes", e);
-      }
+      } catch (e) {}
     };
-
     const fetchAiLogs = async () => {
       try {
         const res = await fetch("/api/assistant/logs?t=" + Date.now());
         const data = await res.json();
-        if (data.status === "success") {
-          setAiLogs(data.logs);
-        }
-      } catch (e) {
-        console.error("Failed to fetch AI logs", e);
-      }
+        if (data.status === "success") setAiLogs(data.logs);
+      } catch (e) {}
     };
-
     fetchVotes();
     fetchAiLogs();
-
-    const timer = setInterval(() => {
-      fetchVotes();
-      fetchAiLogs();
-    }, 3000);
-
+    const timer = setInterval(() => { fetchVotes(); fetchAiLogs(); }, 3000);
     return () => clearInterval(timer);
   }, []);
 
-  // Pusher coordination when connected
   useEffect(() => {
     if (!isConnected || !pin) return;
-
     const pusher = new Pusher("e9724bd6db7ccd51f076", { cluster: "ap2" });
     const channel = pusher.subscribe(`ecoblock-${pin}`);
-
     channel.bind("slide-update", (data: any) => {
       if (data.action === "sync_remote") {
         setCurrentSlide(data.current);
@@ -170,51 +149,33 @@ export default function AdminPanel() {
         setIsConnected(false);
       }
     });
-
     sendCommand("status");
-
-    return () => {
-      channel.unbind_all();
-      channel.unsubscribe();
-      pusher.disconnect();
-    };
+    return () => { channel.unbind_all(); channel.unsubscribe(); pusher.disconnect(); };
   }, [isConnected, pin]);
 
-  // Log events to dashboard timeline helper
   const logEvent = (msg: string, type: "slide" | "vote" | "system") => {
-    setTimelineEvents(prev => [
-      {
-        id: Math.random().toString(),
-        event: msg,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-        type
-      },
-      ...prev
-    ].slice(0, 10));
+    setTimelineEvents(prev => [{
+      id: Math.random().toString(),
+      event: msg,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      type
+    }, ...prev].slice(0, 10));
   };
 
-  // Trigger event timeline logs on session triggers
   useEffect(() => {
-    if (isConnected) {
-      logEvent(`প্রেজেন্টেশন স্লাইড ${currentSlide} এ পরিবর্তন করা হয়েছে।`, "slide");
-    }
+    if (isConnected) logEvent(`স্লাইড ${currentSlide}-এ পরিবর্তন করা হয়েছে।`, "slide");
   }, [currentSlide]);
 
   const totalVotes = votes.yes + votes.no;
   const approvalRate = totalVotes > 0 ? Math.round((votes.yes / totalVotes) * 100) : 0;
 
   useEffect(() => {
-    if (totalVotes > 0) {
-      logEvent(`নতুন মতামত ভোট জমা হয়েছে। মোট ভোট: ${totalVotes}টি।`, "vote");
-    }
+    if (totalVotes > 0) logEvent(`নতুন ভোট জমা। মোট ভোট: ${totalVotes}টি।`, "vote");
   }, [totalVotes]);
 
   useEffect(() => {
-    if (isConnected) {
-      logEvent(`প্রেসিডেন্ট রুম পিন ${pin} দিয়ে সংযুক্ত হয়েছে।`, "system");
-    } else {
-      setTimelineEvents([]);
-    }
+    if (isConnected) logEvent(`পিন ${pin} দিয়ে সংযুক্ত হয়েছে।`, "system");
+    else setTimelineEvents([]);
   }, [isConnected]);
 
   const sendCommand = async (action: string, slideNum: number | null = null, extra: any = {}) => {
@@ -223,44 +184,31 @@ export default function AdminPanel() {
       await fetch("/api/pusher", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          pin,
-          action,
-          slide: slideNum,
-          ...extra
-        })
+        body: JSON.stringify({ pin, action, slide: slideNum, ...extra })
       });
-    } catch (e) {
-      console.error("Failed to send remote command", e);
-    }
+    } catch (e) {}
   };
 
   const handleConnect = () => {
-    if (pin.trim().length >= 4) {
-      setIsConnected(true);
-    } else {
-      alert("দয়া করে প্রেজেন্টেশন স্লাইডশো পেজে প্রদর্শিত ৪-ডিজিট পিন নাম্বারটি লিখুন।");
-    }
+    if (pin.trim().length >= 4) setIsConnected(true);
+    else showToast("দয়া করে ৪-ডিজিট পিন নাম্বারটি লিখুন।", "error");
   };
 
-  const handleDisconnect = () => {
-    sendCommand("disconnect");
-    setIsConnected(false);
-  };
+  const handleDisconnect = () => { sendCommand("disconnect"); setIsConnected(false); };
 
   const resetVotes = async () => {
-    if (!confirm("আপনি কি নিশ্চিতভাবে সকল লাইভ ভোট মুছে দিতে চান? এর ফলে স্লাইডের মতামত গ্রাফ শূন্য হয়ে যাবে।")) return;
+    if (!confirm("আপনি কি নিশ্চিতভাবে সকল ভোট মুছে দিতে চান?")) return;
     setResetting(true);
     try {
       const res = await fetch("/api/vote/reset");
       const result = await res.json();
       if (result.status === "success") {
         setVotes({ yes: 0, no: 0, feed: [] });
-        logEvent("ডাটাবেজের সকল লাইভ ভোট সফলভাবে রিসেট করা হয়েছে।", "system");
-        alert("ভোট ডেটা সফলভাবে মুছে ফেলা হয়েছে।");
+        logEvent("সকল ভোট রিসেট করা হয়েছে।", "system");
+        showToast("ভোট ডেটা সফলভাবে মুছে ফেলা হয়েছে।", "success");
       }
     } catch (e) {
-      alert("ভোট ডেটা মুছতে ত্রুটি। অনুগ্রহ করে আবার চেষ্টা করুন।");
+      showToast("ভোট ডেটা মুছতে ত্রুটি।", "error");
     } finally {
       setResetting(false);
     }
@@ -278,308 +226,420 @@ export default function AdminPanel() {
       const result = await res.json();
       if (result.status === "success") {
         setInjectName("");
-        // Re-fetch votes immediately
         const resFetch = await fetch("/api/vote/fetch?t=" + Date.now());
         const data = await resFetch.json();
         setVotes(data);
+        showToast(`টেস্ট ভোট (${type === 'yes' ? 'হ্যাঁ' : 'না'}) সফলভাবে যোগ হয়েছে।`, "success");
       }
     } catch (e) {
-      alert("টেস্ট ভোট ইনজেক্ট করা সম্ভব হয়নি।");
+      showToast("টেস্ট ভোট যোগ করা সম্ভব হয়নি।", "error");
     } finally {
       setInjecting(false);
     }
   };
 
   const getSlideInfo = (slideNum: number) => {
-    switch (slideNum) {
-      case 1: return { title: "প্রজেক্ট পরিচিতি", desc: "AeroStone ৩D মডেল ও মেলা পরিচিতি" };
-      case 2: return { title: "সমস্যা ও উদ্দেশ্য", desc: "ঢাকার বায়ুদূষণ ও ক্ষতিকর NOx গ্যাসের বিস্তার" };
-      case 3: return { title: "সমাধান সূত্র", desc: "ফটোক্যাটালাইটিক কংক্রিট ব্লকের passive বায়ু ফিল্টারিং" };
-      case 4: return { title: "মিশ্রণ ও অনুপাত", desc: "Aggregate, সিমেন্ট ও TiO₂ ফটোক্যাটালিস্টের সঠিক অনুপাত" };
-      case 5: return { title: "ফটোক্যাটালাইসিস থিওরি", desc: "সূর্যালোকের UV রশির প্রভাবে ইলেকট্রন হোল এক্সাইটেশন" };
-      case 6: return { title: "লাইভ সিমুলেশন", desc: "কণা ও র্যাডিক্যাল রিঅ্যাকশনের ৩D অ্যানিমেটেড ভিউ" };
-      case 7: return { title: "নাইট্রেট রূপান্তর", desc: "দূষণমুক্ত উপাদানের রূপান্তর ও বৃষ্টিতে ধুয়ে অপসারণ" };
-      case 8: return { title: "ল্যাব পরীক্ষার ফলাফল", desc: "৩৫ মিনিটে ৮০% NOx হ্রাসকরণের বিজ্ঞান মেলা প্রমাণ" };
-      case 9: return { title: "ইমপ্যাক্ট ক্যালকুলেটর", desc: "লাইভ বায়ু পরিশোধন ও বৃক্ষ রোপণের গাণিতিক তুলনা" };
-      case 10: return { title: "বাণিজ্যিক সুবিধা", desc: "sidewalks, pavements ও dividers এ passive ব্যবহার" };
-      case 11: return { title: "জনমত মতামত পোল", desc: "দর্শকদের মতামত ভোট প্রদর্শনী বার গ্রাফ" };
-      case 12: return { title: "ভবিষ্যত পরিকল্পনা", desc: "পাবলিক sidewalks এ ব্যাপক উৎপাদন ও বাস্তবায়নের উপায়" };
-      case 13: return { title: "উপসংহার ও বিদায়", desc: "প্রজেক্ট সমাপ্তি এবং বিচারকদের ধন্যবাদ জ্ঞাপন" };
-      default: return { title: "প্রশ্নোত্তর সেশন", desc: "বিচারকদের কারিগরি প্রশ্নের প্রশ্নোত্তর আলোচনা" };
-    }
+    const slides: Record<number, { title: string; emoji: string }> = {
+      1: { title: "প্রজেক্ট পরিচিতি", emoji: "🏗️" },
+      2: { title: "সমস্যা ও উদ্দেশ্য", emoji: "🌫️" },
+      3: { title: "সমাধান সূত্র", emoji: "💡" },
+      4: { title: "মিশ্রণ ও অনুপাত", emoji: "⚗️" },
+      5: { title: "ফটোক্যাটালাইসিস", emoji: "☀️" },
+      6: { title: "লাইভ সিমুলেশন", emoji: "🔬" },
+      7: { title: "নাইট্রেট রূপান্তর", emoji: "♻️" },
+      8: { title: "ল্যাব ফলাফল", emoji: "📊" },
+      9: { title: "ইমপ্যাক্ট ক্যালকুলেটর", emoji: "🧮" },
+      10: { title: "বাণিজ্যিক সুবিধা", emoji: "🏙️" },
+      11: { title: "মতামত পোল", emoji: "🗳️" },
+      12: { title: "ভবিষ্যত পরিকল্পনা", emoji: "🚀" },
+      13: { title: "উপসংহার", emoji: "🎯" },
+      14: { title: "প্রশ্নোত্তর", emoji: "❓" },
+    };
+    return slides[slideNum] || { title: "অজানা", emoji: "📄" };
   };
 
+  const tabs: { id: TabType; label: string; icon: React.ReactNode; badge?: number }[] = [
+    { id: "control", label: "স্লাইড কন্ট্রোল", icon: <Tv className="w-4 h-4" /> },
+    { id: "votes", label: "লাইভ ভোট", icon: <BarChart3 className="w-4 h-4" />, badge: totalVotes },
+    { id: "ai", label: "AI লগ", icon: <Brain className="w-4 h-4" />, badge: aiLogs.length },
+    { id: "settings", label: "সেটিংস", icon: <Settings2 className="w-4 h-4" /> },
+  ];
+
   return (
-    <div 
-      className="min-h-screen flex flex-col aurora-bg" 
-      style={{ fontFamily: "'Hind Siliguri', sans-serif" }}
-    >
-      {/* Background Aurora Glows */}
-      <div className="aurora-orb aurora-orb-1" />
-      <div className="aurora-orb aurora-orb-2" />
-      <div className="aurora-orb aurora-orb-3" />
-      
-      {/* Header */}
-      <header className="glass-panel sticky top-0 z-50 px-6 py-4 rounded-none border-t-0 border-x-0 border-b bg-white/70 backdrop-blur-md shadow-sm">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-sky-400 flex items-center justify-center icon-container-glow">
-              <Sliders className="w-5.5 h-5.5 text-white" />
+    <div className="admin-root min-h-screen" style={{ fontFamily: "'Hind Siliguri', 'Inter', sans-serif" }}>
+      <style jsx global>{`
+        @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        * { box-sizing: border-box; }
+        
+        .admin-root {
+          background: #0a0f1a;
+          color: #e2e8f0;
+        }
+        
+        .glass-dark {
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.08);
+          backdrop-filter: blur(20px);
+        }
+        
+        .glass-card {
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.09);
+          border-radius: 20px;
+          backdrop-filter: blur(20px);
+        }
+
+        .glow-emerald { box-shadow: 0 0 30px rgba(16,185,129,0.15); }
+        .glow-blue { box-shadow: 0 0 30px rgba(59,130,246,0.15); }
+        
+        .bg-grid {
+          background-image: 
+            linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+          background-size: 40px 40px;
+        }
+
+        .neon-btn {
+          background: linear-gradient(135deg, #10b981, #059669);
+          box-shadow: 0 4px 15px rgba(16,185,129,0.3);
+          transition: all 0.2s ease;
+        }
+        .neon-btn:hover {
+          box-shadow: 0 6px 25px rgba(16,185,129,0.5);
+          transform: translateY(-1px);
+        }
+        .neon-btn:active { transform: translateY(0); }
+        
+        .danger-btn {
+          background: rgba(239,68,68,0.1);
+          border: 1px solid rgba(239,68,68,0.25);
+          color: #f87171;
+          transition: all 0.2s ease;
+        }
+        .danger-btn:hover {
+          background: rgba(239,68,68,0.2);
+          box-shadow: 0 4px 15px rgba(239,68,68,0.2);
+        }
+        
+        .tab-active {
+          background: rgba(16,185,129,0.15);
+          border-color: rgba(16,185,129,0.4) !important;
+          color: #10b981;
+        }
+        
+        .slide-btn-active {
+          background: linear-gradient(135deg, rgba(16,185,129,0.2), rgba(59,130,246,0.2));
+          border-color: rgba(16,185,129,0.5) !important;
+          color: #10b981;
+          box-shadow: 0 0 15px rgba(16,185,129,0.15);
+        }
+        
+        .input-dark {
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.1);
+          color: #e2e8f0;
+          border-radius: 12px;
+          transition: all 0.2s ease;
+          outline: none;
+        }
+        .input-dark:focus {
+          border-color: rgba(16,185,129,0.5);
+          background: rgba(255,255,255,0.07);
+          box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
+        }
+        .input-dark::placeholder { color: rgba(148,163,184,0.5); }
+        
+        .select-dark {
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.1);
+          color: #e2e8f0;
+          border-radius: 12px;
+          outline: none;
+          cursor: pointer;
+        }
+        .select-dark:focus {
+          border-color: rgba(16,185,129,0.5);
+          box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
+        }
+        .select-dark option { background: #1e293b; }
+        
+        .scrollbar-dark::-webkit-scrollbar { width: 5px; }
+        .scrollbar-dark::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); border-radius: 5px; }
+        .scrollbar-dark::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 5px; }
+        
+        .pulse-dot {
+          width: 8px; height: 8px;
+          background: #10b981;
+          border-radius: 50%;
+          box-shadow: 0 0 0 0 rgba(16,185,129,0.7);
+          animation: pulse-ring 2s infinite;
+        }
+        @keyframes pulse-ring {
+          0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.7); }
+          70% { box-shadow: 0 0 0 8px rgba(16,185,129,0); }
+          100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); }
+        }
+
+        @keyframes slide-up {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-up { animation: slide-up 0.3s ease-out; }
+        
+        .stat-card {
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.07);
+          border-radius: 16px;
+          padding: 16px 20px;
+          transition: all 0.2s ease;
+        }
+        .stat-card:hover {
+          background: rgba(255,255,255,0.07);
+          border-color: rgba(255,255,255,0.12);
+        }
+
+        .timeline-line {
+          position: relative;
+          padding-left: 20px;
+        }
+        .timeline-line::before {
+          content: '';
+          position: absolute;
+          left: 7px;
+          top: 8px;
+          bottom: 0;
+          width: 1px;
+          background: rgba(255,255,255,0.08);
+        }
+        .timeline-dot {
+          position: absolute;
+          left: 0;
+          top: 6px;
+          width: 15px;
+          height: 15px;
+          border-radius: 50%;
+          border: 2px solid;
+        }
+        .timeline-dot-slide { background: rgba(16,185,129,0.2); border-color: #10b981; }
+        .timeline-dot-vote { background: rgba(249,115,22,0.2); border-color: #f97316; }
+        .timeline-dot-system { background: rgba(139,92,246,0.2); border-color: #8b5cf6; }
+        
+        .page-link-card {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          padding: 14px 16px;
+          border-radius: 14px;
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.07);
+          transition: all 0.2s ease;
+          text-decoration: none;
+          color: inherit;
+        }
+        .page-link-card:hover {
+          background: rgba(255,255,255,0.07);
+          border-color: rgba(255,255,255,0.15);
+          transform: translateX(4px);
+        }
+        
+        @media (max-width: 768px) {
+          .admin-sidebar { display: none; }
+          .admin-main { padding: 16px; }
+        }
+      `}</style>
+
+      {/* Background */}
+      <div className="fixed inset-0 bg-grid opacity-100 pointer-events-none z-0" />
+      <div className="fixed top-0 right-0 w-[600px] h-[600px] rounded-full opacity-10 pointer-events-none z-0"
+        style={{ background: "radial-gradient(circle, #10b981, transparent 70%)", transform: "translate(30%, -30%)" }} />
+      <div className="fixed bottom-0 left-0 w-[400px] h-[400px] rounded-full opacity-10 pointer-events-none z-0"
+        style={{ background: "radial-gradient(circle, #3b82f6, transparent 70%)", transform: "translate(-30%, 30%)" }} />
+
+      {/* Toast Notification */}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
+      {/* Top Header */}
+      <header className="glass-dark sticky top-0 z-50 border-t-0 border-x-0 border-b" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+        <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between gap-4">
+          {/* Brand */}
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: "linear-gradient(135deg, #10b981, #3b82f6)" }}>
+              <Sliders className="w-4.5 h-4.5 text-white" />
             </div>
             <div>
-              <div className="text-lg font-black tracking-wider text-glow-primary" style={{ color: 'var(--color-primary)' }}>
-                এ্যারোস্টোন কন্ট্রোল প্যানেল
-              </div>
-              <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest leading-none mt-0.5">
-                Science Fair 2026 • Live Admin Console
-              </div>
+              <div className="font-black text-sm text-white tracking-wide">এ্যারোস্টোন কন্ট্রোল</div>
+              <div className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">Science Fair 2026 Admin</div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <a 
-              href="/assistant" 
-              target="_blank"
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-purple-600 to-indigo-650 hover:from-purple-500 hover:to-indigo-555 text-white font-bold text-xs rounded-xl transition-all shadow-md hover:shadow-purple-500/20 mr-1.5 cursor-pointer"
-            >
-              <Sparkles className="w-3.5 h-3.5 animate-pulse" /> ভয়েস অ্যাসিস্ট্যান্ট পেজ
-            </a>
-            <div className="text-[10px] font-black uppercase bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 px-3 py-1.5 rounded-full shadow-sm animate-pulse">
-              অ্যাডমিন লাইভ সেশন
+
+          {/* Center: Live time & status */}
+          <div className="hidden md:flex items-center gap-3">
+            <div className="stat-card flex items-center gap-2 py-2 px-3">
+              <Clock className="w-3.5 h-3.5 text-slate-400" />
+              <span className="font-mono text-sm text-slate-300 font-bold">
+                {currentTime.toLocaleTimeString("bn-BD")}
+              </span>
             </div>
+            <div className={`flex items-center gap-2 py-2 px-3 rounded-xl border text-xs font-bold ${
+              isConnected
+                ? "bg-emerald-500/10 border-emerald-500/25 text-emerald-400"
+                : "bg-slate-700/30 border-slate-600/30 text-slate-500"
+            }`}>
+              {isConnected ? <Wifi className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
+              {isConnected ? `সংযুক্ত • পিন ${pin}` : "সংযুক্ত নেই"}
+            </div>
+          </div>
+
+          {/* Right: Quick actions */}
+          <div className="flex items-center gap-2">
+            <a href="/assistant/" target="_blank"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white transition-colors"
+              style={{ background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.25)" }}>
+              <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+              <span className="hidden sm:inline">AI অ্যাসিস্ট্যান্ট</span>
+            </a>
+            <a href="/presentation/" target="_blank"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-300 hover:text-white transition-colors"
+              style={{ background: "rgba(59,130,246,0.15)", border: "1px solid rgba(59,130,246,0.25)" }}>
+              <Tv className="w-3.5 h-3.5 text-blue-400" />
+              <span className="hidden sm:inline">স্লাইডশো</span>
+            </a>
           </div>
         </div>
       </header>
 
-      {/* Main Layout */}
-      <main className="flex-grow max-w-7xl w-full mx-auto px-4 md:px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 relative z-10">
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 md:px-6 py-6 relative z-10">
         
-        {/* Left Column: Shortcuts, Configuration Settings, and Live Graph Gauge */}
-        <div className="lg:col-span-5 space-y-6 flex flex-col">
-          
-          {/* Section 1: Navigation Shortcuts */}
-          <div className="glass-panel p-6 bg-white/80 border-white/40 shadow-lg">
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-2 border-b border-slate-100 pb-2.5">
-              <div className="w-6.5 h-6.5 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0">
-                <ArrowRight className="w-4 h-4" />
+        {/* Stats Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+          {[
+            { label: "মোট ভোট", value: totalVotes, icon: <BarChart3 className="w-4 h-4" />, color: "#10b981" },
+            { label: "সমর্থন হার", value: `${approvalRate}%`, icon: <TrendingUp className="w-4 h-4" />, color: "#3b82f6" },
+            { label: "AI কথোপকথন", value: aiLogs.length, icon: <Brain className="w-4 h-4" />, color: "#8b5cf6" },
+            { label: "বর্তমান স্লাইড", value: `${currentSlide}/${totalSlides}`, icon: <Eye className="w-4 h-4" />, color: "#f97316" },
+          ].map((stat, i) => (
+            <div key={i} className="stat-card">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs text-slate-500 font-semibold">{stat.label}</span>
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center"
+                  style={{ background: `${stat.color}20`, color: stat.color }}>
+                  {stat.icon}
+                </div>
               </div>
-              পেজ নেভিগেশন ও প্রদর্শনী শর্টকাট
-            </h2>
-            <p className="text-xs text-slate-500 leading-relaxed mb-1">
-              প্রদর্শনী চলাকালীন সময়ে বিচারক ও বিজ্ঞানমেলার দর্শকদের সুবিধার্থে পৃষ্ঠাগুলো সরাসরি খুলুন:
-            </p>
+              <div className="text-2xl font-black text-white">{stat.value}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Two Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+          {/* Left Sidebar */}
+          <div className="lg:col-span-4 space-y-4">
             
-            <div className="grid grid-cols-1 gap-2.5">
-              <a href="/" target="_blank" className="flex items-center justify-between p-3.5 bg-slate-50/60 hover:bg-emerald-50/20 border border-slate-200/80 hover:border-emerald-400 rounded-2xl group transition-all">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-emerald-100/70 text-emerald-600 flex items-center justify-center font-bold shrink-0">
-                    <Layers className="w-4.5 h-4.5" />
-                  </div>
-                  <div className="text-left">
-                    <div className="text-xs font-extrabold text-slate-800">মূল প্রজেক্ট ড্যাশবোর্ড (ল্যান্ডিং পেজ)</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">এ্যারোস্টোন সিমুলেশন ও প্রযুক্তিগত তথ্য</div>
-                  </div>
-                </div>
-                <ArrowUpRight className="w-4 h-4 text-slate-300 group-hover:text-emerald-600 transition-colors" />
-              </a>
-
-              <a href="/presentation/" target="_blank" className="flex items-center justify-between p-3.5 bg-slate-50/60 hover:bg-sky-50/20 border border-slate-200/80 hover:border-sky-400 rounded-2xl group transition-all">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-sky-100/70 text-sky-600 flex items-center justify-center font-bold shrink-0">
-                    <Tv className="w-4.5 h-4.5" />
-                  </div>
-                  <div className="text-left">
-                    <div className="text-xs font-extrabold text-slate-800">প্রেজেন্টেশন স্লাইড শো স্ক্রিন</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">বিজ্ঞান মেলা প্রদর্শনীর জন্য পূর্ণাঙ্গ স্লাইড</div>
-                  </div>
-                </div>
-                <ArrowUpRight className="w-4 h-4 text-slate-300 group-hover:text-sky-600 transition-colors" />
-              </a>
-
-              <a href="/assistant/" target="_blank" className="flex items-center justify-between p-3.5 bg-slate-50/60 hover:bg-purple-50/20 border border-slate-200/80 hover:border-purple-400 rounded-2xl group transition-all">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-purple-100/70 text-purple-600 flex items-center justify-center font-bold shrink-0">
-                    <Sparkles className="w-4.5 h-4.5" />
-                  </div>
-                  <div className="text-left">
-                    <div className="text-xs font-extrabold text-slate-800">এআই ভয়েস অ্যাসিস্ট্যান্ট (ট্যাবলেট পেজ)</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">দর্শকদের ভয়েস প্রশ্নের উত্তর প্রদানের ট্যাব স্ক্রিন</div>
-                  </div>
-                </div>
-                <ArrowUpRight className="w-4 h-4 text-slate-300 group-hover:text-purple-600 transition-colors" />
-              </a>
-            </div>
-          </div>
-
-          {/* Section 2: AeroStone AI Training & Settings Console */}
-          <div className="glass-panel p-6 bg-white/80 border-white/40 shadow-lg space-y-4">
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-2 border-b border-slate-100 pb-2.5">
-              <div className="w-6.5 h-6.5 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0">
-                <Sliders className="w-4 h-4" />
+            {/* Page Navigation */}
+            <div className="glass-card p-5">
+              <div className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <ArrowRight className="w-3.5 h-3.5 text-emerald-500" />
+                পেজ নেভিগেশন
               </div>
-              এআই মডেল ও ট্রেইনিং কনসোল
-            </h2>
-
-            <div className="space-y-3.5 text-xs font-semibold text-slate-600">
-              {/* API Key Connection Status */}
-              <div className="flex justify-between items-center">
-                <span>ওপেনরাউটার এপিআই কী স্ট্যাটাস:</span>
-                {hasKey ? (
-                  <span className="bg-emerald-100 text-emerald-700 font-bold px-2.5 py-1 rounded-md flex items-center gap-1.5 shadow-sm">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span> এপিআই সক্রিয়
-                  </span>
-                ) : (
-                  <span className="bg-amber-100 text-amber-700 font-bold px-2.5 py-1 rounded-md flex items-center gap-1.5 animate-pulse shadow-sm">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span> কী সেট করুন
-                  </span>
-                )}
-              </div>
-
-              {/* API Key Input */}
-              <div className="space-y-1.5">
-                <label className="block text-[11px] text-slate-400 font-bold uppercase tracking-wider">OpenRouter API Key:</label>
-                <input
-                  type="password"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="sk-or-v1-..."
-                  className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl outline-none focus:border-emerald-500 focus:bg-white text-slate-800 transition-all font-mono"
-                />
-              </div>
-
-              {/* Model Dropdown Selector */}
-              <div className="space-y-1.5">
-                <label className="block text-[11px] text-slate-400 font-bold uppercase tracking-wider">সক্রিয় এআই মডেল (AI Model):</label>
-                <select
-                  value={selectedModel}
-                  onChange={(e) => setSelectedModel(e.target.value)}
-                  className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl outline-none focus:border-emerald-500 focus:bg-white text-slate-800 transition-all cursor-pointer font-bold animate-fade-in"
-                >
-                  <option value="google/gemini-2.5-flash">Gemini 2.5 Flash (সুপার ফাস্ট, মেলা ডেমো)</option>
-                  <option value="google/gemini-2.5-pro">Gemini 2.5 Pro (জটিল প্রশ্ন ও গভীর ব্যাখ্যা)</option>
-                  <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet (উন্নত বুদ্ধিমত্তা ও কোডিং)</option>
-                  <option value="openai/gpt-4o">GPT-4o (হাই পারফরম্যান্স)</option>
-                  <option value="openai/gpt-4o-mini">GPT-4o Mini (ফাস্ট লাইট মডেল)</option>
-                </select>
-              </div>
-
-              {/* Prompt Training Textarea */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between items-center">
-                  <label className="block text-[11px] text-slate-400 font-bold uppercase tracking-wider">এআই অ্যাসিস্ট্যান্ট নলেজ ট্রেনিং (Prompt):</label>
-                  <span className="text-[10px] text-slate-400 font-normal">এডিটযোগ্য নলেজ বেস</span>
-                </div>
-                <textarea
-                  value={systemPrompt}
-                  onChange={(e) => setSystemPrompt(e.target.value)}
-                  rows={8}
-                  placeholder="এখানে এআই এর সম্পূর্ণ নলেজ ও ডেমো নির্দেশনাগুলো লিখুন..."
-                  className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl outline-none focus:border-emerald-500 focus:bg-white text-slate-800 transition-all font-medium leading-relaxed resize-y scrollbar-thin"
-                />
-              </div>
-
-              <button
-                onClick={saveConfigSettings}
-                className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-md hover:shadow-emerald-600/25 flex items-center justify-center gap-1.5"
-              >
-                <CheckCircle2 className="w-4 h-4" /> কনফিগারেশন ও ট্রেইনিং সেভ করুন
-              </button>
-            </div>
-          </div>
-
-          {/* Section 3: Live SVG Doughnut Chart Progress & Database Management */}
-          <div className="glass-panel p-6 bg-white/80 border-white/40 shadow-lg">
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-2 border-b border-slate-100 pb-2.5">
-              <div className="w-6.5 h-6.5 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0">
-                <Database className="w-4 h-4" />
-              </div>
-              লাইভ মতামত ডাটা ও পরিসংখ্যান
-            </h2>
-            
-            {/* SVG Doughnut Circle Gauge Widget */}
-            <div className="flex items-center gap-6 bg-slate-50/50 p-4 rounded-2xl border border-slate-200/70 shadow-inner mb-4">
-              <div className="relative w-24 h-24 flex items-center justify-center shrink-0">
-                <svg className="w-full h-full transform -rotate-90">
-                  <circle
-                    cx="48"
-                    cy="48"
-                    r="40"
-                    className="text-slate-200"
-                    strokeWidth="8"
-                    stroke="currentColor"
-                    fill="transparent"
-                  />
-                  <circle
-                    cx="48"
-                    cy="48"
-                    r="40"
-                    className="text-emerald-500 svg-gauge-ring"
-                    strokeWidth="8"
-                    strokeDasharray={2 * Math.PI * 40}
-                    strokeDashoffset={2 * Math.PI * 40 - (approvalRate / 100) * (2 * Math.PI * 40)}
-                    strokeLinecap="round"
-                    stroke="currentColor"
-                    fill="transparent"
-                  />
-                </svg>
-                <div className="absolute text-center">
-                  <span className="text-xl font-black text-slate-800 leading-none">{approvalRate}%</span>
-                  <span className="block text-[8px] text-slate-400 font-bold uppercase tracking-wider mt-0.5">সমর্থন</span>
-                </div>
-              </div>
-              
-              <div className="flex-grow space-y-2 text-xs font-bold">
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-500 font-semibold">হ্যাঁ (Yes):</span>
-                  <span className="text-emerald-600">{votes.yes} ভোট ({totalVotes > 0 ? Math.round(votes.yes/totalVotes*100) : 0}%)</span>
-                </div>
-                <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-                  <div className="bg-emerald-500 h-full rounded-full transition-all duration-500" style={{ width: `${totalVotes > 0 ? (votes.yes/totalVotes*100) : 0}%` }} />
-                </div>
-                
-                <div className="flex justify-between items-center pt-1">
-                  <span className="text-slate-500 font-semibold">না (No):</span>
-                  <span className="text-rose-600">{votes.no} ভোট ({totalVotes > 0 ? Math.round(votes.no/totalVotes*100) : 0}%)</span>
-                </div>
-                <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-                  <div className="bg-rose-500 h-full rounded-full transition-all duration-500" style={{ width: `${totalVotes > 0 ? (votes.no/totalVotes*100) : 0}%` }} />
-                </div>
+              <div className="space-y-2">
+                {[
+                  { href: "/", icon: <Layers className="w-4 h-4" />, label: "মূল ড্যাশবোর্ড", desc: "ল্যান্ডিং পেজ", color: "#10b981" },
+                  { href: "/presentation/", icon: <Tv className="w-4 h-4" />, label: "স্লাইডশো স্ক্রিন", desc: "প্রেজেন্টেশন", color: "#3b82f6" },
+                  { href: "/assistant/", icon: <Sparkles className="w-4 h-4" />, label: "AI ভয়েস অ্যাসিস্ট্যান্ট", desc: "ট্যাবলেট পেজ", color: "#8b5cf6" },
+                  { href: "/presentation/vote/", icon: <BarChart3 className="w-4 h-4" />, label: "লাইভ ভোট স্ক্রিন", desc: "দর্শক ভোটিং", color: "#f97316" },
+                ].map((link, i) => (
+                  <a key={i} href={link.href} target="_blank" className="page-link-card group">
+                    <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                      style={{ background: `${link.color}15`, color: link.color }}>
+                      {link.icon}
+                    </div>
+                    <div className="flex-grow min-w-0">
+                      <div className="text-xs font-bold text-slate-200 group-hover:text-white transition-colors">{link.label}</div>
+                      <div className="text-[10px] text-slate-500">{link.desc}</div>
+                    </div>
+                    <ArrowUpRight className="w-3.5 h-3.5 text-slate-600 group-hover:text-slate-300 transition-colors shrink-0" />
+                  </a>
+                ))}
               </div>
             </div>
 
-            <div className="space-y-4 pt-2">
-              <button 
-                onClick={resetVotes}
-                disabled={resetting}
-                className="w-full py-3 rounded-xl border border-rose-200 bg-rose-50/40 text-rose-600 hover:bg-rose-100/60 font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
-              >
-                <Trash2 className="w-4 h-4" /> 
-                {resetting ? "মুছে ফেলা হচ্ছে..." : "ডাটাবেজের সকল মতামত ভোট রিসেট করুন"}
+            {/* Live Vote Stats */}
+            <div className="glass-card p-5">
+              <div className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <BarChart3 className="w-3.5 h-3.5 text-emerald-500" />
+                লাইভ মতামত পরিসংখ্যান
+              </div>
+
+              {/* Donut Chart */}
+              <div className="flex items-center gap-5 mb-4">
+                <div className="relative w-20 h-20 shrink-0">
+                  <svg className="w-full h-full -rotate-90">
+                    <circle cx="40" cy="40" r="32" strokeWidth="7" stroke="rgba(255,255,255,0.06)" fill="transparent" />
+                    <circle cx="40" cy="40" r="32" strokeWidth="7"
+                      stroke="url(#emeraldGrad)"
+                      strokeDasharray={2 * Math.PI * 32}
+                      strokeDashoffset={2 * Math.PI * 32 - (approvalRate / 100) * (2 * Math.PI * 32)}
+                      strokeLinecap="round"
+                      fill="transparent"
+                      style={{ transition: "stroke-dashoffset 0.5s ease" }}
+                    />
+                    <defs>
+                      <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#10b981" />
+                        <stop offset="100%" stopColor="#3b82f6" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-lg font-black text-white leading-none">{approvalRate}%</span>
+                    <span className="text-[8px] text-slate-500 font-bold mt-0.5">সমর্থন</span>
+                  </div>
+                </div>
+
+                <div className="flex-grow space-y-3">
+                  {[
+                    { label: "হ্যাঁ", count: votes.yes, pct: totalVotes > 0 ? Math.round(votes.yes/totalVotes*100) : 0, color: "#10b981" },
+                    { label: "না", count: votes.no, pct: totalVotes > 0 ? Math.round(votes.no/totalVotes*100) : 0, color: "#f87171" },
+                  ].map((v, i) => (
+                    <div key={i}>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="font-bold" style={{ color: v.color }}>{v.label}</span>
+                        <span className="text-slate-400 font-mono">{v.count} ({v.pct}%)</span>
+                      </div>
+                      <div className="h-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.06)" }}>
+                        <div className="h-full rounded-full transition-all duration-500"
+                          style={{ width: `${v.pct}%`, background: v.color }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <button onClick={resetVotes} disabled={resetting}
+                className="danger-btn w-full py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer">
+                <Trash2 className="w-3.5 h-3.5" />
+                {resetting ? "মুছে ফেলা হচ্ছে..." : "সব ভোট রিসেট করুন"}
               </button>
 
-              <hr className="border-slate-100" />
-
-              <div className="space-y-2.5">
-                <div className="text-xs font-black text-slate-500 uppercase tracking-wider">টেস্ট ভোট ইনজেক্ট (সিমুলেশন)</div>
+              <div className="mt-3 space-y-2">
+                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">টেস্ট ভোট ইনজেক্ট</div>
                 <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={injectName}
-                    onChange={(e) => setInjectName(e.target.value)}
+                  <input type="text" value={injectName} onChange={(e) => setInjectName(e.target.value)}
                     placeholder="ভোটারের নাম (ঐচ্ছিক)"
-                    className="flex-grow text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-emerald-500 text-slate-800"
-                  />
-                  <button
-                    onClick={() => injectVote("yes")}
-                    disabled={injecting}
-                    className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer transition-all hover:scale-105"
-                  >
+                    className="input-dark flex-grow text-xs px-3 py-2" />
+                  <button onClick={() => injectVote("yes")} disabled={injecting}
+                    className="neon-btn px-3 py-2 rounded-xl text-white text-xs font-bold flex items-center gap-1 cursor-pointer">
                     <Plus className="w-3.5 h-3.5" /> হ্যাঁ
                   </button>
-                  <button
-                    onClick={() => injectVote("no")}
-                    disabled={injecting}
-                    className="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl flex items-center gap-1 cursor-pointer transition-all hover:scale-105"
-                  >
+                  <button onClick={() => injectVote("no")} disabled={injecting}
+                    className="px-3 py-2 rounded-xl text-white text-xs font-bold flex items-center gap-1 cursor-pointer"
+                    style={{ background: "rgba(239,68,68,0.2)", border: "1px solid rgba(239,68,68,0.3)" }}>
                     <Plus className="w-3.5 h-3.5" /> না
                   </button>
                 </div>
@@ -587,249 +647,339 @@ export default function AdminPanel() {
             </div>
           </div>
 
-        </div>
+          {/* Right Main Panel */}
+          <div className="lg:col-span-8 space-y-4">
 
-        {/* Right Column: Slide Control Deck, Live Timeline & Dialogue Transcripts */}
-        <div className="lg:col-span-7 space-y-6 flex flex-col">
-          
-          {/* Main Slide controller card */}
-          <div className="glass-panel p-6 bg-white/80 border-white/40 shadow-lg flex-grow">
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-2 border-b border-slate-100 pb-2.5">
-              <div className="w-6.5 h-6.5 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0">
-                <Tv className="w-4 h-4" />
-              </div>
-              স্লাইড রিমোট কন্ট্রোল কনসোল
-            </h2>
-            
-            <p className="text-xs text-slate-500 leading-relaxed mb-4">
-              প্রেজেন্টেশন স্লাইডের সাথে লিংক করতে স্ক্রিনে দৃশ্যমান ৪-ডিজিট পিন নাম্বারটি দিয়ে কানেক্ট করুন:
-            </p>
-
-            {!isConnected ? (
-              <div className="bg-slate-50/50 p-6 rounded-2xl border border-slate-200/80 space-y-4 shadow-sm">
-                <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 text-center">
-                    সক্রিয় প্রেজেন্টেশন পিন টাইপ করুন
-                  </label>
-                  <input
-                    type="text"
-                    pattern="\d*"
-                    maxLength={4}
-                    value={pin}
-                    onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
-                    placeholder="XXXX"
-                    className="w-full text-center text-3xl font-black p-3 bg-white border border-slate-200 rounded-xl outline-none focus:border-emerald-500 text-slate-800 tracking-widest shadow-inner focus:ring-4 focus:ring-emerald-500/10 transition-all"
-                  />
-                </div>
-                <button
-                  onClick={handleConnect}
-                  disabled={pin.length < 4}
-                  className="btn-primary w-full justify-center py-3.5 text-xs tracking-wider uppercase font-bold cursor-pointer shadow-md hover:shadow-emerald-600/25"
-                >
-                  প্রেজেন্টেশন লিংক করুন
+            {/* Tabs */}
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {tabs.map((tab) => (
+                <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap border transition-all cursor-pointer ${
+                    activeTab === tab.id
+                      ? "tab-active"
+                      : "bg-white/3 border-white/07 text-slate-500 hover:text-slate-300 hover:bg-white/05"
+                  }`}
+                  style={{ borderColor: activeTab === tab.id ? undefined : "rgba(255,255,255,0.07)" }}>
+                  {tab.icon}
+                  {tab.label}
+                  {tab.badge !== undefined && tab.badge > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full text-[9px] font-black"
+                      style={{ background: "rgba(16,185,129,0.2)", color: "#10b981" }}>
+                      {tab.badge}
+                    </span>
+                  )}
                 </button>
-              </div>
-            ) : (
-              <div className="space-y-5">
-                
-                {/* Connection Status Banner */}
-                <div className="flex justify-between items-center bg-emerald-50 border border-emerald-100/60 p-4 rounded-2xl shadow-sm">
-                  <div className="flex items-center gap-2 text-xs font-bold text-emerald-700">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                    সংযুক্ত সেশন পিন: {pin}
-                  </div>
-                  <button 
-                    onClick={handleDisconnect}
-                    className="text-xs font-bold text-rose-500 hover:text-rose-600 underline cursor-pointer"
-                  >
-                    সংযোগ বিচ্ছিন্ন করুন
-                  </button>
+              ))}
+            </div>
+
+            {/* Tab: Slide Control */}
+            {activeTab === "control" && (
+              <div className="glass-card p-5 space-y-5">
+                <div className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                  <Tv className="w-3.5 h-3.5 text-emerald-500" />
+                  স্লাইড রিমোট কন্ট্রোল
                 </div>
 
-                {/* Live Slide Preview Telemetry Card */}
-                <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-200/70 shadow-inner flex items-start gap-3.5">
-                  <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0">
-                    <Info className="w-5 h-5 animate-pulse" />
+                {!isConnected ? (
+                  <div className="max-w-sm mx-auto space-y-4 py-4">
+                    <div className="text-center text-sm text-slate-400 leading-relaxed">
+                      প্রেজেন্টেশন স্লাইডশোতে প্রদর্শিত <br />
+                      <strong className="text-white">৪-ডিজিট পিন</strong> দিয়ে কানেক্ট করুন
+                    </div>
+                    <input type="text" pattern="\d*" maxLength={4} value={pin}
+                      onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
+                      placeholder="0000"
+                      className="input-dark w-full text-center text-4xl font-black py-5 tracking-widest"
+                      onKeyDown={(e) => e.key === "Enter" && handleConnect()}
+                    />
+                    <button onClick={handleConnect} disabled={pin.length < 4}
+                      className="neon-btn w-full py-3.5 rounded-xl text-white text-sm font-black flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+                      <Wifi className="w-4 h-4" /> প্রেজেন্টেশনের সাথে সংযুক্ত করুন
+                    </button>
                   </div>
-                  <div className="text-xs">
-                    <div className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">প্রদর্শনী স্লাইড টেলিমেট্রি (Active Preview)</div>
-                    <div className="font-extrabold text-slate-800 mt-0.5 text-sm">স্লাইড {currentSlide}: {getSlideInfo(currentSlide).title}</div>
-                    <div className="text-slate-500 font-semibold mt-0.5 leading-relaxed">{getSlideInfo(currentSlide).desc}</div>
-                  </div>
-                </div>
-
-                {/* Autoplay Remote Settings */}
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => isPlaying ? sendCommand("pause") : sendCommand("play")}
-                    className={`py-3 rounded-xl border text-xs font-black flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                      isPlaying 
-                        ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-                        : "bg-slate-50 border-slate-200 text-slate-400 hover:bg-slate-100/50"
-                    }`}
-                  >
-                    {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                    {isPlaying ? "অটো-প্লে থামান" : "অটো-প্লে শুরু করুন"}
-                  </button>
-
-                  <button
-                    onClick={() => sendCommand("toggle_loop")}
-                    className={`py-3 rounded-xl border text-xs font-black flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                      isLooping 
-                        ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-                        : "bg-slate-50 border-slate-200 text-slate-400 hover:bg-slate-100/50"
-                    }`}
-                  >
-                    <RefreshCw className="w-4 h-4" /> {isLooping ? "লুপ সচল আছে" : "লুপ নিষ্ক্রিয়"}
-                  </button>
-                </div>
-
-                {/* Slides Grid selector */}
-                <div className="space-y-2.5">
-                  <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    সরাসরি স্লাইডে জাম্প করুন (গ্রিড সিলেক্টর)
-                  </div>
-                  
-                  <div className="slide-selector-grid">
-                    {Array.from({ length: totalSlides }, (_, i) => i + 1).map((num) => (
-                      <button
-                        key={num}
-                        onClick={() => sendCommand("goto", num)}
-                        className={`py-3 font-extrabold text-sm rounded-xl border transition-all cursor-pointer slide-matrix-card ${
-                          currentSlide === num
-                            ? "active"
-                            : "bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-100"
-                        }`}
-                      >
-                        {num}
+                ) : (
+                  <div className="space-y-4">
+                    {/* Connection Banner */}
+                    <div className="flex items-center justify-between p-3 rounded-xl"
+                      style={{ background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)" }}>
+                      <div className="flex items-center gap-2.5">
+                        <div className="pulse-dot" />
+                        <span className="text-xs font-bold text-emerald-400">সংযুক্ত • পিন: {pin}</span>
+                      </div>
+                      <button onClick={handleDisconnect}
+                        className="text-xs font-bold text-rose-400 hover:text-rose-300 cursor-pointer flex items-center gap-1">
+                        <LogOut className="w-3.5 h-3.5" /> বিচ্ছিন্ন
                       </button>
-                    ))}
-                  </div>
-                </div>
+                    </div>
 
-                {/* Presentation Interactive Jumps */}
-                <div className="space-y-2 bg-slate-50/50 p-4.5 rounded-2xl border border-slate-200/70 text-xs">
-                  <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
-                    গুরুত্বপূর্ণ স্লাইড জাম্প (লাইভ ডেমো সেশন)
-                  </div>
-                  
-                  <div className="flex flex-col gap-2">
-                    <button 
-                      onClick={() => sendCommand("goto", 6)} 
-                      className="w-full text-left p-3.5 bg-white hover:bg-emerald-50/40 border border-slate-200 hover:border-emerald-300 rounded-xl flex justify-between items-center font-bold text-slate-700 cursor-pointer transition-all hover:translate-x-1"
-                    >
-                      <div>স্লাইড ৬: লাইভ থ্রি-ডি কেমিক্যাল রিঅ্যাকশন সিমুলেশন</div>
-                      <Sparkles className="w-4 h-4 text-emerald-600" />
-                    </button>
-                    
-                    <button 
-                      onClick={() => sendCommand("goto", 9)} 
-                      className="w-full text-left p-3.5 bg-white hover:bg-emerald-50/40 border border-slate-200 hover:border-emerald-300 rounded-xl flex justify-between items-center font-bold text-slate-700 cursor-pointer transition-all hover:translate-x-1"
-                    >
-                      <div>স্লাইড ৯: পরিবেশগত ইমপ্যাক্ট ক্যালকুলেটর ডেমো</div>
-                      <Sparkles className="w-4 h-4 text-emerald-600" />
-                    </button>
-
-                    <button 
-                      onClick={() => sendCommand("goto", 11)} 
-                      className="w-full text-left p-3.5 bg-white hover:bg-emerald-50/40 border border-slate-200 hover:border-emerald-300 rounded-xl flex justify-between items-center font-bold text-slate-700 cursor-pointer transition-all hover:translate-x-1"
-                    >
-                      <div>স্লাইড ১১: লাইভ মতামত পোল ফলাফল স্ক্রিন (গ্রাফ)</div>
-                      <Sparkles className="w-4 h-4 text-emerald-600" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Session Timeline Event Logs */}
-                <div className="glass-panel p-5 bg-white/80 border-slate-200/50 shadow-md">
-                  <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-1">
-                    <Activity className="w-4.5 h-4.5 text-emerald-500 animate-pulse" /> সেশন এক্টিভিটি টাইমলাইন (Live timeline)
-                  </div>
-                  {timelineEvents.length === 0 ? (
-                    <div className="text-center text-xs text-slate-400 py-4 font-semibold">কোনো একটিভিটি রেকর্ড হয়নি। স্লাইড পরিবর্তন করুন।</div>
-                  ) : (
-                    <div className="timeline-container">
-                      {timelineEvents.map((ev) => (
-                        <div key={ev.id} className="timeline-item text-xs font-semibold text-slate-600">
-                          <div className={`timeline-dot ${ev.type === "slide" ? "cyan" : ev.type === "system" ? "purple" : ""}`} />
-                          <div className="flex justify-between items-center">
-                            <span className="text-slate-800">{ev.event}</span>
-                            <span className="text-[10px] text-slate-400 font-mono font-bold">{ev.time}</span>
+                    {/* Current Slide Preview */}
+                    <div className="p-4 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                      <div className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">বর্তমান স্লাইড</div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-3xl">{getSlideInfo(currentSlide).emoji}</span>
+                        <div>
+                          <div className="text-sm font-extrabold text-white">
+                            স্লাইড {currentSlide}: {getSlideInfo(currentSlide).title}
+                          </div>
+                          <div className="text-xs text-slate-500 mt-0.5">
+                            {currentSlide}/{totalSlides} • {isPlaying ? "▶ অটো-প্লে চলছে" : "⏸ বিরতিতে আছে"}
                           </div>
                         </div>
-                      ))}
+                      </div>
                     </div>
+
+                    {/* Prev/Next & Play/Loop */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex gap-2">
+                        <button onClick={() => sendCommand("prev")}
+                          className="flex-1 py-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold cursor-pointer transition-all"
+                          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)", color: "#94a3b8" }}>
+                          <ChevronLeft className="w-4 h-4" /> আগে
+                        </button>
+                        <button onClick={() => sendCommand("next")}
+                          className="flex-1 py-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold cursor-pointer transition-all"
+                          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)", color: "#94a3b8" }}>
+                          পরে <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                      <div className="flex gap-2">
+                        <button onClick={() => isPlaying ? sendCommand("pause") : sendCommand("play")}
+                          className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold cursor-pointer transition-all ${
+                            isPlaying ? "tab-active" : ""
+                          }`}
+                          style={isPlaying ? {} : { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)", color: "#94a3b8" }}>
+                          {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                          {isPlaying ? "থামান" : "অটো-প্লে"}
+                        </button>
+                        <button onClick={() => sendCommand("toggle_loop")}
+                          className={`flex-1 py-3 rounded-xl flex items-center justify-center gap-1.5 text-xs font-bold cursor-pointer transition-all ${
+                            isLooping ? "tab-active" : ""
+                          }`}
+                          style={isLooping ? {} : { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)", color: "#94a3b8" }}>
+                          <RefreshCw className="w-4 h-4" />
+                          {isLooping ? "লুপ চলছে" : "লুপ"}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Slide Grid */}
+                    <div>
+                      <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">সরাসরি স্লাইডে যান</div>
+                      <div className="grid grid-cols-7 gap-1.5">
+                        {Array.from({ length: totalSlides }, (_, i) => i + 1).map((num) => (
+                          <button key={num} onClick={() => sendCommand("goto", num)}
+                            className={`aspect-square rounded-xl text-sm font-black flex flex-col items-center justify-center gap-0.5 cursor-pointer transition-all border ${
+                              currentSlide === num ? "slide-btn-active" : ""
+                            }`}
+                            style={currentSlide !== num ? { background: "rgba(255,255,255,0.04)", borderColor: "rgba(255,255,255,0.07)", color: "#64748b" } : {}}>
+                            <span>{num}</span>
+                            <span className="text-[7px] leading-none opacity-60">{getSlideInfo(num).emoji}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Quick Jump */}
+                    <div>
+                      <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">⚡ দ্রুত জাম্প</div>
+                      <div className="grid grid-cols-1 gap-2">
+                        {[
+                          { slide: 6, label: "লাইভ ৩D কেমিক্যাল সিমুলেশন" },
+                          { slide: 9, label: "পরিবেশ ইমপ্যাক্ট ক্যালকুলেটর" },
+                          { slide: 11, label: "লাইভ মতামত পোল গ্রাফ" },
+                        ].map((j) => (
+                          <button key={j.slide} onClick={() => sendCommand("goto", j.slide)}
+                            className="w-full flex items-center justify-between p-3 rounded-xl text-xs font-bold cursor-pointer transition-all group"
+                            style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", color: "#94a3b8" }}>
+                            <div className="flex items-center gap-2.5">
+                              <span className="text-base">{getSlideInfo(j.slide).emoji}</span>
+                              <span className="group-hover:text-white transition-colors">স্লাইড {j.slide}: {j.label}</span>
+                            </div>
+                            <Zap className="w-3.5 h-3.5 text-emerald-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Timeline */}
+                    <div>
+                      <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                        <Activity className="w-3.5 h-3.5 text-emerald-500" /> লাইভ টাইমলাইন
+                      </div>
+                      <div className="space-y-3 max-h-44 overflow-y-auto scrollbar-dark">
+                        {timelineEvents.length === 0 ? (
+                          <div className="text-center text-xs text-slate-600 py-4">কোনো কার্যকলাপ নেই।</div>
+                        ) : timelineEvents.map((ev) => (
+                          <div key={ev.id} className="timeline-line">
+                            <div className={`timeline-dot ${
+                              ev.type === "slide" ? "timeline-dot-slide"
+                              : ev.type === "vote" ? "timeline-dot-vote"
+                              : "timeline-dot-system"
+                            }`} />
+                            <div className="flex justify-between items-start gap-2">
+                              <span className="text-xs text-slate-300 font-semibold">{ev.event}</span>
+                              <span className="text-[10px] text-slate-600 font-mono shrink-0">{ev.time}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Tab: Votes Log */}
+            {activeTab === "votes" && (
+              <div className="glass-card p-5">
+                <div className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <Users className="w-3.5 h-3.5 text-emerald-500" />
+                  সাম্প্রতিক মতামত ভোট
+                </div>
+                <div className="space-y-2 max-h-[500px] overflow-y-auto scrollbar-dark pr-1">
+                  {votes.feed.length === 0 ? (
+                    <div className="text-center py-16 text-slate-600">
+                      <BarChart3 className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                      <div className="text-sm font-semibold">এখনও কোনো ভোট জমা পড়েনি।</div>
+                    </div>
+                  ) : votes.feed.map((vote, idx) => (
+                    <div key={idx} className="flex justify-between items-center p-3 rounded-xl text-xs font-bold"
+                      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-xl flex items-center justify-center text-base"
+                          style={{ background: vote.type === "yes" ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)" }}>
+                          {vote.type === "yes" ? "👍" : "👎"}
+                        </div>
+                        <span className="text-slate-300">{vote.name}</span>
+                      </div>
+                      <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wide ${
+                        vote.type === "yes"
+                          ? "text-emerald-400"
+                          : "text-rose-400"
+                      }`}
+                        style={{ background: vote.type === "yes" ? "rgba(16,185,129,0.1)" : "rgba(239,68,68,0.1)" }}>
+                        {vote.type === "yes" ? "সমর্থন" : "দ্বিমত"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Tab: AI Logs */}
+            {activeTab === "ai" && (
+              <div className="glass-card p-5">
+                <div className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <Brain className="w-3.5 h-3.5 text-purple-400" />
+                  AI কথোপকথন লগ
+                </div>
+                <div className="space-y-3 max-h-[500px] overflow-y-auto scrollbar-dark pr-1">
+                  {aiLogs.length === 0 ? (
+                    <div className="text-center py-16 text-slate-600">
+                      <Sparkles className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                      <div className="text-sm font-semibold">কোনো কথোপকথন রেকর্ড নেই।</div>
+                    </div>
+                  ) : aiLogs.map((log) => (
+                    <div key={log.id} className="p-4 rounded-xl space-y-2.5"
+                      style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)" }}>
+                      <div className="flex justify-between items-center">
+                        <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest flex items-center gap-1">
+                          👤 দর্শক প্রশ্ন
+                        </span>
+                        <span className="text-[9px] text-slate-600 font-mono">{log.timestamp}</span>
+                      </div>
+                      <div className="text-xs font-bold text-white p-2.5 rounded-lg"
+                        style={{ background: "rgba(255,255,255,0.05)" }}>{log.query}</div>
+                      <div className="text-[9px] font-black text-purple-400 uppercase tracking-widest flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" /> AI উত্তর
+                      </div>
+                      <div className="text-xs text-slate-400 leading-relaxed">{log.response}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Tab: Settings */}
+            {activeTab === "settings" && (
+              <div className="glass-card p-5 space-y-5">
+                <div className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                  <Settings2 className="w-3.5 h-3.5 text-emerald-500" />
+                  AI মডেল ও ট্রেনিং কনসোল
+                </div>
+
+                {/* API Key Status */}
+                <div className="flex items-center justify-between p-3 rounded-xl"
+                  style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+                  <div className="flex items-center gap-2 text-xs font-bold">
+                    <Key className="w-3.5 h-3.5 text-slate-400" />
+                    <span className="text-slate-400">OpenRouter API কী স্ট্যাটাস:</span>
+                  </div>
+                  {hasKey ? (
+                    <span className="flex items-center gap-1.5 text-xs font-black text-emerald-400"
+                      style={{ background: "rgba(16,185,129,0.1)", padding: "4px 10px", borderRadius: "8px" }}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" /> সক্রিয়
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1.5 text-xs font-black text-amber-400"
+                      style={{ background: "rgba(245,158,11,0.1)", padding: "4px 10px", borderRadius: "8px" }}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" /> সেট করুন
+                    </span>
                   )}
                 </div>
 
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">OpenRouter API Key</label>
+                    <input type="password" value={apiKey} onChange={(e) => setApiKey(e.target.value)}
+                      placeholder="sk-or-v1-..."
+                      className="input-dark w-full text-xs px-4 py-3 font-mono" />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">AI মডেল নির্বাচন</label>
+                    <select value={selectedModel} onChange={(e) => setSelectedModel(e.target.value)}
+                      className="select-dark w-full text-xs px-4 py-3 font-bold">
+                      <option value="google/gemini-2.5-flash">Gemini 2.5 Flash — সুপার ফাস্ট (মেলা ডেমো)</option>
+                      <option value="google/gemini-2.5-pro">Gemini 2.5 Pro — জটিল প্রশ্ন</option>
+                      <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet — উন্নত বুদ্ধিমত্তা</option>
+                      <option value="openai/gpt-4o">GPT-4o — হাই পারফরম্যান্স</option>
+                      <option value="openai/gpt-4o-mini">GPT-4o Mini — ফাস্ট লাইট</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="block text-[10px] font-black text-slate-500 uppercase tracking-widest">AI ট্রেনিং প্রম্পট (Knowledge Base)</label>
+                      <span className="text-[9px] text-slate-600">{systemPrompt.length} অক্ষর</span>
+                    </div>
+                    <textarea value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)}
+                      rows={10}
+                      placeholder="এখানে AI-এর সম্পূর্ণ নলেজ ও নির্দেশনা লিখুন..."
+                      className="input-dark w-full text-xs px-4 py-3 font-medium leading-relaxed resize-y scrollbar-dark" />
+                  </div>
+
+                  <button onClick={saveConfigSettings} disabled={savingConfig}
+                    className="neon-btn w-full py-3 rounded-xl text-white text-sm font-black flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60">
+                    {savingConfig ? (
+                      <><RefreshCw className="w-4 h-4 animate-spin" /> সংরক্ষণ হচ্ছে...</>
+                    ) : (
+                      <><CheckCircle2 className="w-4 h-4" /> কনফিগারেশন সেভ করুন</>
+                    )}
+                  </button>
+                </div>
               </div>
             )}
+
           </div>
-
-          {/* Voting Log Feed Preview */}
-          <div className="glass-panel p-6 bg-white/80 border-white/40 shadow-lg">
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-2 border-b border-slate-100 pb-2.5">
-              <div className="w-6.5 h-6.5 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0">
-                <Users className="w-4 h-4" />
-              </div>
-              সাম্প্রতিক লাইভ ভোটের তালিকা (সর্বশেষ ১০টি)
-            </h2>
-
-            <div className="overflow-y-auto max-h-48 space-y-2 pr-1 scrollbar-thin">
-              {votes.feed.length === 0 ? (
-                <div className="text-center text-xs text-slate-400 py-8">এখনও কোনো মতামত ভোট জমা পড়েনি। মতামত নেওয়ার কিউআর কোডটি দেখান।</div>
-              ) : (
-                votes.feed.slice(0, 10).map((vote, idx) => (
-                  <div key={idx} className="flex justify-between items-center p-3 rounded-xl bg-slate-50/80 border border-slate-200/80 text-xs font-bold audit-log-item shadow-sm">
-                    <span className="text-slate-700">{vote.name}</span>
-                    {vote.type === "yes" ? (
-                      <span className="text-emerald-600 font-black uppercase tracking-wide bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100">হ্যাঁ সমর্থন করেছেন</span>
-                    ) : (
-                      <span className="text-rose-600 font-black uppercase tracking-wide bg-rose-50 px-2 py-1 rounded-md border border-rose-100">দ্বিমত পোষণ করেছেন</span>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* AI Conversation History Log */}
-          <div className="glass-panel p-6 bg-white/80 border-white/40 shadow-lg">
-            <h2 className="text-sm font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-2 border-b border-slate-100 pb-2.5">
-              <div className="w-6.5 h-6.5 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0">
-                <MessageSquare className="w-4 h-4" />
-              </div>
-              এআই ভয়েস অ্যাসিস্ট্যান্ট চ্যাট লগ (সর্বশেষ ৫০টি)
-            </h2>
-
-            <div className="overflow-y-auto max-h-80 space-y-3.5 pr-1 scrollbar-thin">
-              {aiLogs.length === 0 ? (
-                <div className="text-center text-xs text-slate-400 py-8">এখনও কোনো কথোপকথন রেকর্ড করা হয়নি। ভয়েস অ্যাসিস্ট্যান্ট পেজটি ব্যবহার করুন।</div>
-              ) : (
-                aiLogs.map((log) => (
-                  <div key={log.id} className="p-4 rounded-2xl bg-slate-50/80 border border-slate-200/80 space-y-2 text-xs shadow-sm audit-log-item">
-                    <div className="flex justify-between items-center text-[9px] text-slate-400 font-black uppercase tracking-widest">
-                      <span>দর্শক প্রশ্ন</span>
-                      <span>{log.timestamp}</span>
-                    </div>
-                    <div className="font-extrabold text-slate-800 bg-white p-2.5 rounded-xl border border-slate-150 shadow-inner">{log.query}</div>
-                    <div className="text-[9px] text-emerald-600 font-black uppercase tracking-widest pt-1 flex items-center gap-1">
-                      <Sparkles className="w-3.5 h-3.5 text-emerald-500" /> অ্যাসিস্ট্যান্ট উত্তর
-                    </div>
-                    <div className="text-slate-600 pl-1 leading-relaxed">{log.response}</div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
         </div>
-
       </main>
-      
+
       {/* Footer */}
-      <footer className="py-6 text-center text-[10px] text-slate-400 font-bold border-t border-slate-200/50 bg-white/50 backdrop-blur-sm relative z-10">
-        © 2026 এ্যারোস্টোন সায়েন্স ফেয়ার অ্যাসিস্ট্যান্ট • যশোর পলিটেকনিক ইনস্টিটিউট
+      <footer className="mt-8 py-5 text-center relative z-10" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <div className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">
+          © 2026 এ্যারোস্টোন • যশোর পলিটেকনিক ইনস্টিটিউট • Science Fair Admin Console
+        </div>
       </footer>
     </div>
   );
