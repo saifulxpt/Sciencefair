@@ -81,28 +81,35 @@ jobs:
             chown -R www-data:www-data /var/www/airpurifying-concrete/ 2>/dev/null || true
             chmod -R 775 /var/www/airpurifying-concrete/ 2>/dev/null || true
 
-            # Copy nginx config (HTTP only for now)
-            cat > /etc/nginx/sites-available/airpurifying-concrete << 'NGINXEOF'
-            server {
-                listen 80;
-                listen [::]:80;
-                server_name server.saifulinfo.com 160.25.226.152;
-                location / {
-                    proxy_pass http://localhost:3000;
-                    proxy_http_version 1.1;
-                    proxy_set_header Upgrade $http_upgrade;
-                    proxy_set_header Connection 'upgrade';
-                    proxy_set_header Host $host;
-                    proxy_cache_bypass $http_upgrade;
-                    proxy_set_header X-Real-IP $remote_addr;
-                    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                    proxy_set_header X-Forwarded-Proto $scheme;
-                }
-            }
-            NGINXEOF
+            # Clean up old nginx site enabled files to prevent conflicts
+            rm -f /etc/nginx/sites-enabled/*
 
-            ln -sf /etc/nginx/sites-available/airpurifying-concrete /etc/nginx/sites-enabled/airpurifying-concrete
-            rm -f /etc/nginx/sites-enabled/default
+            if [ -f /etc/letsencrypt/live/server.saifulinfo.com/fullchain.pem ]; then
+                echo "SSL Certificate exists. Applying HTTPS Nginx config..."
+                cp /var/www/airpurifying-concrete/nginx-site.conf /etc/nginx/sites-available/airpurifying-concrete
+                ln -sf /etc/nginx/sites-available/airpurifying-concrete /etc/nginx/sites-enabled/airpurifying-concrete
+            else
+                echo "SSL Certificate not found. Applying temporary HTTP Nginx config..."
+                cat > /etc/nginx/sites-available/airpurifying-concrete << 'NGINXEOF'
+server {
+    listen 80;
+    listen [::]:80;
+    server_name server.saifulinfo.com 160.25.226.152;
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+NGINXEOF
+                ln -sf /etc/nginx/sites-available/airpurifying-concrete /etc/nginx/sites-enabled/airpurifying-concrete
+            fi
 
             # Restart PM2 with new files
             pm2 stop next-app 2>/dev/null || true
