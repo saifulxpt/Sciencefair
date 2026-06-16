@@ -186,9 +186,9 @@ export default function AdminPanel() {
 
   const s: Record<string, React.CSSProperties> = {
     root: { minHeight: "100vh", background: C.bg, color: C.text, fontFamily: "'Inter', 'Hind Siliguri', system-ui, sans-serif", fontSize: 14 },
-    header: { background: "rgba(13,17,23,0.95)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${C.border}`, position: "sticky", top: 0, zIndex: 100, padding: "0 24px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 },
+    header: { background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${C.border}`, position: "sticky", top: 0, zIndex: 100, padding: "0 24px", height: 56, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 },
     logo: { display: "flex", alignItems: "center", gap: 10 },
-    logoIcon: { width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg,#3fb950,#58a6ff)", display: "flex", alignItems: "center", justifyContent: "center" },
+    logoIcon: { width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg,#2563eb,#0ea5e9)", display: "flex", alignItems: "center", justifyContent: "center" },
     logoText: { fontSize: 14, fontWeight: 700, color: C.text },
     logoSub: { fontSize: 10, color: C.muted, fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase" },
     pill: { display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 20, fontSize: 11, fontWeight: 600, border: "1px solid", cursor: "default" },
@@ -199,21 +199,21 @@ export default function AdminPanel() {
     cardBody: { padding: 16 },
     sectionLabel: { fontSize: 11, fontWeight: 600, color: C.dim, textTransform: "uppercase" as const, letterSpacing: "0.06em", marginBottom: 8 },
     navLink: { display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 6, border: `1px solid transparent`, fontSize: 13, fontWeight: 500, color: C.muted, textDecoration: "none", cursor: "pointer", transition: "all .15s", marginBottom: 2 },
-    stat: { padding: "14px 16px", borderRadius: 8, border: `1px solid ${C.border}`, background: "rgba(255,255,255,0.02)" },
+    stat: { padding: "14px 16px", borderRadius: 8, border: `1px solid ${C.border}`, background: "#f8fafc" },
     tab: { display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 6, fontSize: 12, fontWeight: 600, border: `1px solid ${C.border}`, cursor: "pointer", color: C.muted, transition: "all .15s", background: "transparent", whiteSpace: "nowrap" as const },
     tabActive: { background: C.greenBg, borderColor: C.greenBorder, color: C.green },
-    input: { width: "100%", padding: "8px 12px", borderRadius: 6, border: `1px solid ${C.border}`, background: "rgba(255,255,255,0.04)", color: C.text, fontSize: 13, outline: "none", fontFamily: "inherit", transition: "border-color .15s" },
-    textarea: { width: "100%", padding: "10px 12px", borderRadius: 6, border: `1px solid ${C.border}`, background: "rgba(255,255,255,0.04)", color: C.text, fontSize: 12, outline: "none", fontFamily: "inherit", resize: "vertical" as const, lineHeight: 1.6, transition: "border-color .15s" },
-    select: { width: "100%", padding: "8px 12px", borderRadius: 6, border: `1px solid ${C.border}`, background: "#1c2128", color: C.text, fontSize: 13, outline: "none", cursor: "pointer" },
-    btnGreen: { display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "8px 16px", borderRadius: 6, border: "none", background: C.green, color: "#0d1117", fontSize: 13, fontWeight: 700, cursor: "pointer", transition: "all .15s", width: "100%" },
+    input: { width: "100%", padding: "8px 12px", borderRadius: 6, border: `1px solid ${C.border}`, background: "#f8fafc", color: C.text, fontSize: 13, outline: "none", fontFamily: "inherit", transition: "border-color .15s" },
+    textarea: { width: "100%", padding: "10px 12px", borderRadius: 6, border: `1px solid ${C.border}`, background: "#f8fafc", color: C.text, fontSize: 12, outline: "none", fontFamily: "inherit", resize: "vertical" as const, lineHeight: 1.6, transition: "border-color .15s" },
+    select: { width: "100%", padding: "8px 12px", borderRadius: 6, border: `1px solid ${C.border}`, background: "#ffffff", color: C.text, fontSize: 13, outline: "none", cursor: "pointer" },
+    btnGreen: { display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "8px 16px", borderRadius: 6, border: "none", background: C.green, color: "#ffffff", fontSize: 13, fontWeight: 700, cursor: "pointer", transition: "all .15s", width: "100%" },
     btnRed: { display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "7px 14px", borderRadius: 6, border: `1px solid ${C.redBorder}`, background: C.redBg, color: C.red, fontSize: 12, fontWeight: 600, cursor: "pointer", width: "100%", transition: "all .15s" },
     btnGhost: { display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "7px 12px", borderRadius: 6, border: `1px solid ${C.border}`, background: "transparent", color: C.muted, fontSize: 12, fontWeight: 600, cursor: "pointer", transition: "all .15s" },
     btnGhostActive: { borderColor: C.greenBorder, background: C.greenBg, color: C.green },
     slideGrid: { display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 6 },
-    slideBtn: { aspectRatio: "1", display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "center", borderRadius: 6, border: `1px solid ${C.border}`, background: "rgba(255,255,255,0.02)", cursor: "pointer", fontSize: 12, fontWeight: 700, color: C.muted, transition: "all .15s" },
+    slideBtn: { aspectRatio: "1", display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "center", borderRadius: 6, border: `1px solid ${C.border}`, background: "#f8fafc", cursor: "pointer", fontSize: 12, fontWeight: 700, color: C.muted, transition: "all .15s" },
     slideBtnActive: { borderColor: C.greenBorder, background: C.greenBg, color: C.green, boxShadow: `0 0 0 2px ${C.greenBg}` },
-    voteBar: { height: 6, borderRadius: 3, overflow: "hidden", background: "rgba(255,255,255,0.06)" },
-    logItem: { padding: "12px", borderRadius: 8, border: `1px solid ${C.border}`, background: "rgba(255,255,255,0.02)", marginBottom: 8 },
+    voteBar: { height: 6, borderRadius: 3, overflow: "hidden", background: "rgba(15,23,42,0.06)" },
+    logItem: { padding: "12px", borderRadius: 8, border: `1px solid ${C.border}`, background: "#f8fafc", marginBottom: 8 },
     badge: { display: "inline-flex", alignItems: "center", padding: "2px 8px", borderRadius: 20, fontSize: 11, fontWeight: 700, letterSpacing: "0.04em" },
   };
 
@@ -250,7 +250,7 @@ export default function AdminPanel() {
       {/* Header */}
       <header style={s.header}>
         <div style={s.logo}>
-          <div style={s.logoIcon}><Sliders size={15} color="#0d1117" /></div>
+          <div style={s.logoIcon}><Sliders size={15} color="#ffffff" /></div>
           <div>
             <div style={s.logoText}>Air Purifying Concrete Block</div>
             <div style={s.logoSub}>Admin Console • Science Fair 2026</div>

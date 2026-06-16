@@ -455,7 +455,7 @@ export default function VoiceAssistant() {
           </a>
           
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 icon-container-glow">
+            <div className="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600 icon-container-glow">
               <Sparkles className="w-5 h-5 animate-pulse" />
             </div>
             <div className="text-left">
@@ -506,9 +506,9 @@ export default function VoiceAssistant() {
                 {status === "listening" ? (
                   <Mic className="w-9 h-9 text-rose-500 animate-pulse" />
                 ) : status === "speaking" ? (
-                  <Headphones className="w-9 h-9 text-emerald-600 animate-bounce" />
+                  <Headphones className="w-9 h-9 text-blue-600 animate-bounce" />
                 ) : (
-                  <Mic className="w-9 h-9 text-emerald-600" />
+                  <Mic className="w-9 h-9 text-blue-600" />
                 )}
               </div>
             </button>
@@ -539,7 +539,7 @@ export default function VoiceAssistant() {
           <div className="chat-container glass-panel bg-white/80 border-white/40 shadow-xl">
             <div className="chat-feed-header flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-600">
+                <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-600">
                   <MessageSquare className="w-4.5 h-4.5" />
                 </div>
                 <div>
@@ -588,7 +588,7 @@ export default function VoiceAssistant() {
                     </div>
                   ) : (
                     <div className="flex items-start gap-2.5">
-                      <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 shrink-0 mt-0.5">
+                      <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0 mt-0.5">
                         <Sparkles className="w-3.5 h-3.5" />
                       </div>
                       <span>{msg.text}</span>
@@ -611,7 +611,7 @@ export default function VoiceAssistant() {
               <button
                 type="submit"
                 disabled={status === "processing" || !inputText.trim()}
-                className="chat-send-btn shadow-md shadow-emerald-500/25"
+                className="chat-send-btn shadow-md shadow-blue-500/25"
                 title="বার্তা পাঠান"
               >
                 <Send className="w-4 h-4 text-white" />
@@ -620,9 +620,9 @@ export default function VoiceAssistant() {
           </div>
 
           {/* Preset Questions */}
-          <div className="glass-panel p-6 bg-white/80 shadow-lg border-emerald-500/10">
+          <div className="glass-panel p-6 bg-white/80 shadow-lg border-blue-500/10">
             <div className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2.5">
-              <HelpCircle className="w-4.5 h-4.5 text-emerald-500" /> সচরাচর জিজ্ঞাসিত প্রশ্নসমূহ
+              <HelpCircle className="w-4.5 h-4.5 text-blue-500" /> সচরাচর জিজ্ঞাসিত প্রশ্নসমূহ
             </div>
             <p className="text-[11px] text-slate-400 leading-relaxed mb-2">
               মাইক্রোফোনের পাশাপাশি সরাসরি নিচের প্রশ্নগুলোতে ক্লিক করেও আপনি এআই অ্যাসিস্ট্যান্টের সাহায্য নিতে পারেন:
@@ -634,10 +634,10 @@ export default function VoiceAssistant() {
                   key={idx}
                   onClick={() => handleSampleClick(q)}
                   disabled={status === "processing"}
-                  className="w-full text-left p-3 bg-slate-50/70 border border-slate-200/60 rounded-xl text-xs font-bold text-slate-700 hover:text-emerald-700 hover:bg-emerald-50/40 hover:border-emerald-300 transition-all flex items-center justify-between cursor-pointer preset-capsule"
+                  className="w-full text-left p-3 bg-slate-50/70 border border-slate-200/60 rounded-xl text-xs font-bold text-slate-700 hover:text-blue-700 hover:bg-blue-50/40 hover:border-blue-300 transition-all flex items-center justify-between cursor-pointer preset-capsule"
                 >
                   <span>{q}</span>
-                  <Sparkles className="w-3.5 h-3.5 text-slate-300 hover:text-emerald-600 shrink-0 ml-2" />
+                  <Sparkles className="w-3.5 h-3.5 text-slate-300 hover:text-blue-600 shrink-0 ml-2" />
                 </button>
               ))}
             </div>
