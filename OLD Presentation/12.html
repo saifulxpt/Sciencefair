@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide 14 - Professional Roadmap</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&family=Hind+Siliguri:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* ==========================================
+           1. CORE RESET & CLEAN DESIGN
+           ========================================== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body, html { 
+            width: 100vw; height: 100vh; overflow: hidden; 
+            background-color: #f8fafc; 
+            font-family: 'Hind Siliguri', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .bg-canvas {
+            position: absolute; inset: 0;
+            background: 
+                radial-gradient(circle at 0% 0%, rgba(13, 148, 136, 0.03) 0%, transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(15, 23, 42, 0.03) 0%, transparent 40%);
+            z-index: -1;
+        }
+
+        .slide-container {
+            width: 100%; height: 100%;
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            padding: 0 100px;
+            align-items: center;
+            gap: 80px;
+        }
+
+        /* ==========================================
+           2. TYPOGRAPHY & HEADER
+           ========================================== */
+        .section-label {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800; color: #0d9488;
+            letter-spacing: 5px; font-size: 12px;
+            margin-bottom: 15px; display: block;
+            text-transform: uppercase; opacity: 0.8;
+        }
+
+        h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 60px; font-weight: 900;
+            color: #0f172a; line-height: 1;
+            letter-spacing: -2px; margin-bottom: 50px;
+        }
+        h2 span { color: #0d9488; }
+
+        /* ==========================================
+           3. MODERN STEPPER (TIMELINE)
+           ========================================== */
+        .roadmap-list { display: flex; flex-direction: column; gap: 35px; position: relative; }
+        
+        /* The vertical line */
+        .roadmap-list::before {
+            content: ''; position: absolute; left: 24px; top: 10px; bottom: 10px;
+            width: 1px; background: linear-gradient(to bottom, #0d9488, #e2e8f0);
+        }
+
+        .roadmap-step { 
+            display: flex; gap: 35px; position: relative; 
+            transition: transform 0.3s ease;
+        }
+
+        .step-icon {
+            width: 50px; height: 50px; background: #ffffff;
+            border: 1px solid #e2e8f0; border-radius: 15px;
+            display: flex; align-items: center; justify-content: center;
+            color: #0d9488; font-size: 18px; z-index: 2;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.03);
+            flex-shrink: 0; transition: 0.3s;
+        }
+
+        .roadmap-step:hover .step-icon {
+            background: #0d9488; color: #ffffff; border-color: #0d9488;
+            transform: scale(1.1);
+        }
+
+        .step-content span { 
+            font-family: 'Outfit'; font-weight: 800; font-size: 13px; 
+            color: #94a3b8; text-transform: uppercase; letter-spacing: 2px;
+        }
+        
+        .step-content h3 { 
+            font-family: 'Outfit', sans-serif; font-size: 22px; 
+            color: #1e293b; font-weight: 800; margin: 4px 0 8px 0; 
+        }
+
+        .step-content p { 
+            color: #64748b; font-size: 17px; line-height: 1.5; font-weight: 400;
+            max-width: 500px;
+        }
+
+        /* ==========================================
+           4. CLEAN CLOSING CARD (RIGHT SIDE)
+           ========================================== */
+        .closing-card {
+            background: #ffffff;
+            padding: 60px 50px;
+            border-radius: 40px;
+            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: 0 40px 100px -20px rgba(0,0,0,0.08);
+            text-align: center;
+            position: relative;
+        }
+
+        .closing-card h4 {
+            font-family: 'Outfit'; font-size: 24px; font-weight: 900;
+            color: #0f172a; letter-spacing: -0.5px; margin-bottom: 20px;
+        }
+
+        .brand-p {
+            font-size: 11px; font-weight: 800; color: #94a3b8;
+            text-transform: uppercase; letter-spacing: 3px; margin-bottom: 25px;
+        }
+
+        /* --- Updated Brand Logos Section --- */
+        .brands {
+            display: flex; justify-content: center; align-items: center; gap: 25px;
+            margin-bottom: 45px;
+        }
+
+        .brand-logo {
+            height: 45px;
+            width: auto;
+            object-fit: contain;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            mix-blend-mode: multiply; /* Helps blend white backgrounds smoothly */
+        }
+
+        .brand-logo:hover {
+            transform: scale(1.15);
+        }
+
+        /* Presenter Badge */
+        .presenter-box {
+            background: #f8fafc;
+            padding: 25px; border-radius: 25px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .presenter-box h5 {
+            font-family: 'Outfit'; font-size: 20px; font-weight: 900;
+            color: #0d9488; margin-bottom: 5px;
+        }
+
+        .presenter-box p {
+            color: #64748b; font-size: 14px; font-weight: 600;
+        }
+
+        .accent-dot {
+            position: absolute; top: 30px; right: 30px;
+            width: 10px; height: 10px; background: #0d9488;
+            border-radius: 50%; opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-canvas"></div>
+
+    <div class="slide-container">
+        
+        <div class="roadmap-side">
+            <span class="section-label">Scalability & Growth</span>
+            <h2>THE FUTURE <span>VISION.</span></h2>
+            
+            <div class="roadmap-list">
+                <div class="roadmap-step">
+                    <div class="step-icon"><i class="fa-solid fa-vial"></i></div>
+                    <div class="step-content">
+                        <span>2025 - Phase 01</span>
+                        <h3>Field Validation</h3>
+                        <p>বাস্তব পরিবেশে ন্যানো-কোটিং এর স্থায়িত্ব এবং বায়ুদূষণ হ্রাসের কার্যকারিতা যাচাই করা।</p>
+                    </div>
+                </div>
+
+                <div class="roadmap-step">
+                    <div class="step-icon"><i class="fa-solid fa-microchip"></i></div>
+                    <div class="step-content">
+                        <span>2026 - Phase 02</span>
+                        <h3>Process Optimization</h3>
+                        <p>উৎপাদন খরচ কমিয়ে সাধারণ মানুষের ক্রয়ক্ষমতার মধ্যে আনা এবং ফর্মুলা উন্নত করা।</p>
+                    </div>
+                </div>
+
+                <div class="roadmap-step">
+                    <div class="step-icon"><i class="fa-solid fa-rocket"></i></div>
+                    <div class="step-content">
+                        <span>2027+ - Phase 03</span>
+                        <h3>Global Expansion</h3>
+                        <p>শীর্ষস্থানীয় পেইন্ট কোম্পানিগুলোর সাথে পার্টনারশিপের মাধ্যমে বড় পরিসরে বাজারজাতকরণ।</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="closing-side">
+            <div class="closing-card">
+                <div class="accent-dot"></div>
+                <h4>STRATEGIC ALLIANCE</h4>
+                <p style="color:#64748b; font-size: 17px; margin-bottom: 30px; line-height: 1.6;">
+                    আমরা আমাদের প্রযুক্তিকে শিল্প পর্যায়ে নিয়ে যেতে প্রস্তুত।
+                </p>
+
+                <div class="brand-p">Planned Collaborations</div>
+                
+                <div class="brands">
+                    <img src="https://saifulinfo.com/imagelink/uploads/img_69e2ea17e91740.06126140.webp" alt="Berger Paints" class="brand-logo">
+                    <img src="https://saifulinfo.com/imagelink/uploads/img_69e2ea13cb11c8.92698161.webp" alt="Asian Paints" class="brand-logo">
+                    <img src="https://saifulinfo.com/imagelink/uploads/img_69e2ea0ed901e5.01760173.webp" alt="Elite Paint" class="brand-logo">
+                </div>
+
+                <div class="presenter-box">
+                    <h5>Sharif Barkatullah</h5>
+                    <p>Innovator & Presenter • Jashore Polytechnic</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

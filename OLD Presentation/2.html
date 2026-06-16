@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide 2 - The Crisis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;800;900&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ==========================================
+           1. RESET & BASE STYLES (True Fullscreen)
+           ========================================== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body, html { 
+            width: 100vw; height: 100vh; overflow: hidden; 
+            background-color: #ffffff; 
+            font-family: 'Hind Siliguri', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Minimalist Background with subtle Danger (Red) hint */
+        .bg-canvas {
+            position: absolute; inset: 0;
+            background: 
+                radial-gradient(circle at 100% 0%, rgba(244, 63, 94, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 0% 100%, rgba(15, 23, 42, 0.03) 0%, transparent 40%),
+                #fcfdfe;
+            z-index: -1;
+        }
+
+        /* ==========================================
+           2. LAYOUT DESIGN
+           ========================================== */
+        .slide-container {
+            width: 100%; height: 100%;
+            display: flex; align-items: center;
+            padding: 0 100px;
+            gap: 80px;
+        }
+
+        /* Left Side: Text & Stats */
+        .content-side { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+
+        /* Right Side: Visual */
+        .visual-side { flex: 1; position: relative; }
+
+        /* ==========================================
+           3. TYPOGRAPHY & ELEMENTS
+           ========================================== */
+        .section-label {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700; color: #f43f5e;
+            letter-spacing: 4px; font-size: 14px;
+            margin-bottom: 20px; display: block;
+            text-transform: uppercase;
+        }
+
+        h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 75px; font-weight: 900;
+            color: #0f172a; line-height: 1;
+            letter-spacing: -3px; margin-bottom: 50px;
+        }
+        h2 span { color: #f43f5e; }
+
+        /* Premium Stat Cards */
+        .stats-grid { display: flex; flex-direction: column; gap: 30px; }
+
+        .stat-card {
+            background: #ffffff;
+            padding: 35px 40px;
+            border-radius: 24px;
+            border: 1px solid rgba(0,0,0,0.03);
+            border-left: 6px solid #f43f5e;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.04);
+            display: flex; align-items: center; gap: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateX(10px);
+            box-shadow: 0 20px 40px rgba(244, 63, 94, 0.08);
+        }
+
+        .big-num {
+            font-family: 'Outfit', sans-serif;
+            font-size: 70px; font-weight: 900;
+            color: #f43f5e; line-height: 1;
+            min-width: 140px; text-align: center;
+            letter-spacing: -2px;
+        }
+
+        .stat-info h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 24px; color: #0f172a;
+            font-weight: 700; margin-bottom: 5px;
+        }
+        .stat-info p {
+            color: #64748b; font-size: 18px;
+            line-height: 1.5; font-weight: 400;
+        }
+
+        /* Image Styling */
+        .visual-img {
+            width: 100%; height: 550px;
+            object-fit: cover; border-radius: 40px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.1);
+            filter: grayscale(20%) contrast(1.1); /* Adds a slightly dramatic/polluted feel */
+        }
+
+        /* Accent Elements */
+        .floating-box {
+            position: absolute; bottom: -30px; left: -30px;
+            background: #0f172a; color: #ffffff;
+            padding: 20px 30px; border-radius: 20px;
+            font-family: 'Outfit', sans-serif; font-weight: 600;
+            box-shadow: 0 20px 40px rgba(15, 23, 42, 0.3);
+            border: 4px solid #ffffff;
+        }
+        .floating-box span { color: #f43f5e; font-weight: 800; font-size: 24px; }
+    </style>
+</head>
+<body>
+
+    <div class="bg-canvas"></div>
+
+    <div class="slide-container">
+        
+        <div class="content-side">
+            <span class="section-label">Problem Statement</span>
+            <h2>THE GLOBAL <br><span>CRISIS.</span></h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="big-num">16x</div>
+                    <div class="stat-info">
+                        <h3>Higher PM2.5 Levels</h3>
+                        <p>বাংলাদেশের বাতাসে ক্ষতিকর ধূলিকণার মাত্রা <strong>WHO</strong> এর নিরাপদ মানদণ্ডের চেয়ে প্রায় ১৫-১৬ গুণ বেশি (IQAir)।</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="big-num">-7.5</div>
+                    <div class="stat-info">
+                        <h3>Years of Life Lost</h3>
+                        <p>বায়ু দূষণের কারণে ঢাকা শহরের মানুষের গড় আয়ু প্রায় <strong>সাড়ে ৭ বছর</strong> পর্যন্ত কমে যাচ্ছে।</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="visual-side">
+            <img src="https://saifulinfo.com/imagelink/uploads/img_69dd2d17d9c483.00888232.webp" 
+                 alt="Air Pollution in City" class="visual-img">
+            
+            <div class="floating-box">
+                Dhaka is the <span>2nd</span> most polluted city.
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide 13 - Achievements & Milestones</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;800;900&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* ==========================================
+           1. RESET & BASE STYLES
+           ========================================== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body, html { 
+            width: 100vw; height: 100vh; overflow: hidden; 
+            background-color: #ffffff; 
+            font-family: 'Hind Siliguri', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .bg-canvas {
+            position: absolute; inset: 0;
+            background: 
+                radial-gradient(circle at 100% 0%, rgba(212, 175, 55, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 0% 100%, rgba(13, 148, 136, 0.05) 0%, transparent 40%),
+                #fcfdfe;
+            z-index: -1;
+        }
+
+        .slide-container {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            padding: 40px 80px;
+        }
+
+        /* ==========================================
+           2. TYPOGRAPHY
+           ========================================== */
+        .header-area { margin-bottom: 25px; text-align: center; }
+
+        .section-label {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700; color: #0d9488;
+            letter-spacing: 4px; font-size: 14px;
+            margin-bottom: 10px; display: block;
+            text-transform: uppercase;
+        }
+
+        h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 50px; font-weight: 900;
+            color: #0f172a; line-height: 1;
+            letter-spacing: -2px;
+        }
+        h2 span { color: #d4af37; }
+
+        /* ==========================================
+           3. PREMIUM MASONRY GALLERY (Updated Links)
+           ========================================== */
+        .gallery-wrapper {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 10px;
+            height: 100%;
+        }
+
+        .photo-item {
+            position: relative;
+            background: #f8fafc;
+            border-radius: 25px;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.03);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            cursor: pointer;
+        }
+
+        .photo-item:nth-child(1) { grid-row: span 2; }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.8s ease;
+        }
+
+        .photo-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(212, 175, 55, 0.2);
+            border-color: rgba(212, 175, 55, 0.4);
+            z-index: 10;
+        }
+
+        .photo-item:hover img { transform: scale(1.08); }
+
+        .photo-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(to top, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.2) 60%, transparent 100%);
+            display: flex; flex-direction: column;
+            justify-content: flex-end;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .photo-item:hover .photo-overlay { opacity: 1; }
+
+        .photo-overlay h4 {
+            color: #ffffff;
+            font-size: 18px;
+            font-weight: 800;
+            margin-bottom: 3px;
+            font-family: 'Outfit';
+        }
+
+        .photo-overlay p {
+            color: #cbd5e1;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .award-badge {
+            position: absolute; top: 15px; right: 15px;
+            background: linear-gradient(135deg, #facc15 0%, #d4af37 100%);
+            color: #fff;
+            width: 45px; height: 45px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 10px 20px rgba(212, 175, 55, 0.4);
+            border: 3px solid #fff;
+            z-index: 5;
+            animation: bounceBadge 2s infinite;
+        }
+
+        @keyframes bounceBadge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+    </style>
+</head>
+<body>
+
+    <div class="bg-canvas"></div>
+
+    <div class="slide-container">
+        
+        <div class="header-area">
+            <span class="section-label">A Legacy of Innovation</span>
+            <h2>HONORS & <span>ACHIEVEMENTS.</span></h2>
+        </div>
+
+        <div class="gallery-wrapper">
+            
+            <div class="photo-item">
+                <div class="award-badge"><i class="fa-solid fa-trophy"></i></div>
+                <img src="https://saifulinfo.com/imagelink/uploads/img_69dd3e006243c9.46707423.webp" alt="Award Ceremony">
+                <div class="photo-overlay">
+                    <h4>1st Runner Up Winner</h4>
+                    <p>ASSET Regional Skills & Innovation Competition 2025.</p>
+                </div>
+            </div>
+
+            <div class="photo-item">
+                <img src="https://saifulinfo.com/imagelink/uploads/img_69e284ec43ba36.26661368.webp" alt="Team Pride">
+                <div class="photo-overlay">
+                    <h4>Regional Milestone</h4>
+                    <p>Celebration of excellence with the project team.</p>
+                </div>
+            </div>
+
+            <div class="photo-item">
+                <img src="https://saifulinfo.com/imagelink/uploads/img_69e284e5212261.03224541.webp" alt="Certificate">
+                <div class="photo-overlay">
+                    <h4>Excellence Recognition</h4>
+                    <p>Official certification of our sustainable solution.</p>
+                </div>
+            </div>
+
+            <div class="photo-item">
+                <img src="https://saifulinfo.com/imagelink/uploads/img_69e284f8c26367.39940399.webp" alt="Presentation Stall">
+                <div class="photo-overlay">
+                    <h4>Project Showcase</h4>
+                    <p>Demonstrating TiO₂ Coating at the exhibition stall.</p>
+                </div>
+            </div>
+
+            <div class="photo-item">
+                <img src="https://saifulinfo.com/imagelink/uploads/img_69e284f4998056.72283219.webp" alt="Live Demo">
+                <div class="photo-overlay">
+                    <h4>Public Engagement</h4>
+                    <p>Sharing our vision for a pollution-free future.</p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>

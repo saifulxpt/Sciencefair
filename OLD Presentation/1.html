@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide 1 - Final Intro (No Cropping)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;800;900&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+    <style>
+        /* ==========================================
+           1. RESET & BASE STYLES
+           ========================================== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body, html { 
+            width: 100vw; height: 100vh; overflow: hidden; 
+            background-color: #ffffff; 
+            font-family: 'Hind Siliguri', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .bg-canvas {
+            position: absolute; inset: 0;
+            background: 
+                radial-gradient(circle at 0% 0%, rgba(13, 148, 136, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(2, 132, 199, 0.05) 0%, transparent 40%),
+                #fcfdfe;
+            z-index: -1;
+        }
+
+        /* ==========================================
+           2. LAYOUT DESIGN
+           ========================================== */
+        .slide-container {
+            width: 100%; height: 100%;
+            display: flex; align-items: center;
+            padding: 0 100px;
+            gap: 50px;
+        }
+
+        .content-side { flex: 1.2; padding-right: 50px; z-index: 10;}
+
+        .visual-side { 
+            flex: 0.8; display: flex; justify-content: center; align-items: center; 
+            position: relative;
+            height: 100%;
+        }
+
+        /* ==========================================
+           3. TYPOGRAPHY & ELEMENTS
+           ========================================== */
+        .project-label {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700; color: #0d9488;
+            letter-spacing: 5px; font-size: 14px;
+            margin-bottom: 25px; display: block;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 85px; font-weight: 900;
+            color: #0f172a; line-height: 0.95;
+            letter-spacing: -4px; margin-bottom: 30px;
+        }
+        h1 span { color: #0d9488; }
+
+        .tagline {
+            font-size: 32px; font-weight: 300;
+            color: #64748b; line-height: 1.4;
+            max-width: 600px; margin-bottom: 60px;
+        }
+
+        .presenter-card {
+            display: inline-flex; align-items: center;
+            gap: 25px; padding: 25px 40px;
+            background: #ffffff;
+            border: 1px solid #f1f5f9;
+            border-radius: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.03);
+            position: relative;
+        }
+        .presenter-card::before {
+            content: ''; position: absolute; left: 0; top: 25%; height: 50%;
+            width: 5px; background: #0d9488; border-radius: 0 5px 5px 0;
+        }
+
+        .presenter-info h4 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 26px; color: #0f172a;
+            font-weight: 800; margin-bottom: 4px;
+        }
+        .presenter-info p {
+            color: #94a3b8; font-size: 18px;
+            font-weight: 500; letter-spacing: 0.5px;
+        }
+
+        /* ==========================================
+           4. 3D CONTAINER (FIXED FOR PNG SYSTEM)
+           ========================================== */
+        #webgl-container {
+            /* স্কয়ার শেপ বাতিল করে ফ্রি ফ্লোটিং করা হলো */
+            width: 140%;
+            height: 140%;
+            position: absolute;
+            left: -20%;
+            top: -20%;
+            z-index: 5;
+        }
+
+        #loader {
+            position: absolute;
+            z-index: 20;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+        }
+        .spinner {
+            width: 50px; height: 50px;
+            border: 4px solid rgba(13, 148, 136, 0.1);
+            border-top-color: #0d9488;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text {
+            font-family: 'Outfit', sans-serif; font-weight: 800; color: #0d9488;
+            letter-spacing: 3px; font-size: 14px; text-transform: uppercase;
+        }
+
+        /* Floating Accent Circles */
+        .accent-circle {
+            position: absolute; width: 100px; height: 100px;
+            border-radius: 50%; background: #0d9488;
+            opacity: 0.1; filter: blur(30px);
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-canvas"></div>
+
+    <div class="slide-container">
+        
+        <div class="content-side">
+            <span class="project-label">SCIENCE FAIR 2026</span>
+            <h1>AIR PURIFYING <br><span>CONCRETE BLOCK.</span></h1>
+            <p class="tagline">শহরের বাতাস হোক দূষণমুক্ত ও নিরাপদ। ভবিষ্যতের জন্য একটি আধুনিক ও সায়েন্টিফিক সমাধান।</p>
+            
+            <div class="presenter-card">
+                <div class="presenter-info">
+                    <h4>Sharif Barkatullah</h4>
+                    <p>Innovator & Presenter • Jashore Polytechnic Institute</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="visual-side">
+            <div class="accent-circle" style="top: 10%; right: 10%;"></div>
+            <div class="accent-circle" style="bottom: 10%; left: 10%; background: #0284c7;"></div>
+            
+            <div id="webgl-container">
+                <div id="loader">
+                    <div class="spinner"></div>
+                    <div class="loading-text" id="load-status">Loading Model...</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const MODEL_URL = "https://neurobyteit.com/science/upload/building.glb"; 
+
+        const container = document.getElementById('webgl-container');
+        const loaderUI = document.getElementById('loader');
+        const statusText = document.getElementById('load-status');
+
+        const scene = new THREE.Scene();
+        
+        // 🚨 ক্যামেরা একটু পেছনে নেওয়া হলো যাতে সাইড না কাটে
+        const camera = new THREE.PerspectiveCamera(40, container.clientWidth / container.clientHeight, 0.1, 1000);
+        camera.position.set(12, 10, 18); 
+        camera.lookAt(0, 2, 0);
+
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
+        container.appendChild(renderer.domElement);
+
+        // Lighting
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
+        scene.add(hemiLight);
+
+        const sunLight = new THREE.DirectionalLight(0xffffff, 2);
+        sunLight.position.set(10, 20, 10);
+        scene.add(sunLight);
+
+        const tealRim = new THREE.PointLight(0x0d9488, 5, 20);
+        tealRim.position.set(10, 5, -5);
+        scene.add(tealRim);
+
+        let myBuilding;
+        const loader = new THREE.GLTFLoader();
+
+        loader.load(
+            MODEL_URL,
+            function (gltf) {
+                myBuilding = gltf.scene;
+                
+                const box = new THREE.Box3().setFromObject(myBuilding);
+                const center = box.getCenter(new THREE.Vector3());
+                myBuilding.position.sub(center);
+                myBuilding.position.y = 0; 
+
+                // 🚨 এখন আপনি এখানে ইচ্ছামতো সাইজ বাড়াতে পারবেন, সাইড দিয়ে কাটবে না!
+                myBuilding.scale.set(0.3, 0.3, 0.3); 
+
+                scene.add(myBuilding);
+                loaderUI.style.display = 'none'; 
+            },
+            function (xhr) {
+                if (xhr.total > 0) {
+                    let percent = Math.round((xhr.loaded / xhr.total) * 100);
+                    statusText.innerText = `Loading... ${percent}%`;
+                } else {
+                    let loadedMB = (xhr.loaded / (1024 * 1024)).toFixed(2);
+                    statusText.innerText = `Loading... ${loadedMB} MB`;
+                }
+            },
+            function (error) {
+                console.error("Error Loading Model:", error);
+                statusText.innerText = "Error Loading Model!";
+                statusText.style.color = "#f43f5e";
+            }
+        );
+
+        // Particles
+        const pCount = 150;
+        const pGeo = new THREE.BufferGeometry();
+        const pPos = new Float32Array(pCount * 3);
+        for(let i=0; i < pCount * 3; i++) {
+            pPos[i] = (Math.random() - 0.5) * 40;
+        }
+        pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+        const pMat = new THREE.PointsMaterial({ color: 0x0d9488, size: 0.08, transparent: true, opacity: 0.4 });
+        const particles = new THREE.Points(pGeo, pMat);
+        scene.add(particles);
+
+        // Animation Loop
+        const clock = new THREE.Clock();
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            const elapsed = clock.getElapsedTime();
+            
+            if(myBuilding) {
+                myBuilding.rotation.y += 0.2 * delta; 
+                myBuilding.position.y = Math.sin(elapsed * 0.8) * 0.3; 
+            }
+            
+            particles.rotation.y += 0.05 * delta;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Responsive Resize
+        window.addEventListener('resize', () => {
+            if(container.clientWidth > 0) {
+                camera.aspect = container.clientWidth / container.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(container.clientWidth, container.clientHeight);
+            }
+        });
+    </script>
+</body>
+</html>

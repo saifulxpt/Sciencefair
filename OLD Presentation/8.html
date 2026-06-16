@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide 8 Layer Architecture</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;800;900&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* ==========================================
+           1. RESET & BASE STYLES
+           ========================================== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body, html { 
+            width: 100vw; height: 100vh; overflow: hidden; 
+            background-color: #ffffff; 
+            font-family: 'Hind Siliguri', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .bg-canvas {
+            position: absolute; inset: 0;
+            background: 
+                radial-gradient(circle at 100% 100%, rgba(13, 148, 136, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 0% 0%, rgba(2, 132, 199, 0.03) 0%, transparent 40%),
+                #fcfdfe;
+            z-index: -1;
+        }
+
+        /* ==========================================
+           2. LAYOUT DESIGN
+           ========================================== */
+        .slide-container {
+            width: 100%; height: 100%;
+            display: flex; align-items: center;
+            padding: 0 100px;
+            gap: 70px;
+        }
+
+        .content-side { flex: 1.2; display: flex; flex-direction: column; justify-content: center; }
+        .visual-side { flex: 0.8; position: relative; display: flex; justify-content: center; }
+
+        /* ==========================================
+           3. TYPOGRAPHY & ELEMENTS
+           ========================================== */
+        .section-label {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700; color: #0d9488;
+            letter-spacing: 4px; font-size: 14px;
+            margin-bottom: 20px; display: block;
+            text-transform: uppercase;
+        }
+
+        h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 65px; font-weight: 900;
+            color: #0f172a; line-height: 1;
+            letter-spacing: -3px; margin-bottom: 45px;
+        }
+        h2 span { color: #0d9488; }
+
+        /* Layer Cards - Stack Design */
+        .layer-stack { display: flex; flex-direction: column; gap: 20px; }
+
+        .layer-card {
+            background: #ffffff;
+            padding: 25px 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(0,0,0,0.05);
+            display: flex; align-items: center; gap: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        .layer-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 20px 40px rgba(13, 148, 136, 0.1);
+            border-color: rgba(13, 148, 136, 0.2);
+        }
+
+        .layer-num {
+            font-family: 'Outfit', sans-serif;
+            font-size: 32px; font-weight: 800;
+            color: #e2e8f0; min-width: 60px;
+        }
+        .layer-card:hover .layer-num { color: #0d9488; }
+
+        .layer-info h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 22px; color: #0f172a;
+            font-weight: 700; margin-bottom: 5px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .layer-info h3 span { font-size: 14px; background: #f1f5f9; padding: 2px 10px; border-radius: 5px; color: #64748b; font-weight: 600; }
+
+        .layer-info p {
+            color: #64748b; font-size: 17px; line-height: 1.5;
+        }
+
+        /* 3D Block Visual */
+        .block-3d-visual {
+            width: 100%; height: 500px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 40px;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.1);
+            display: flex; flex-direction: column;
+            overflow: hidden; border: 2px solid #fff;
+        }
+        .v-layer { flex: 1; display: flex; align-items: center; justify-content: center; font-family: 'Outfit'; font-weight: 800; font-size: 20px; transition: 0.3s; }
+        
+        .l1 { background: #0d9488; color: #fff; } /* Top - TiO2 */
+        .l2 { background: #11caa0; color: #fff; opacity: 0.8; } /* Mid - CO2 */
+        .l3 { background: #f1f5f9; color: #94a3b8; } /* Base */
+
+        .v-layer:hover { flex: 1.5; font-size: 28px; opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <div class="bg-canvas"></div>
+
+    <div class="slide-container">
+        
+        <div class="content-side">
+            <span class="section-label">Engineering & Design</span>
+            <h2>THE 3-LAYER <br><span>ARCHITECTURE.</span></h2>
+            
+            <div class="layer-stack">
+                <div class="layer-card">
+                    <div class="layer-num">01</div>
+                    <div class="layer-info">
+                        <h3>TOP LAYER <span>TiO₂ Coating</span></h3>
+                        <p>বাতাসের বিষাক্ত NOx ও SOx গ্যাসকে ভেঙে নিরাপদ নাইট্রেটে রূপান্তর করে।</p>
+                    </div>
+                </div>
+
+                <div class="layer-card">
+                    <div class="layer-num">02</div>
+                    <div class="layer-info">
+                        <h3>MIDDLE LAYER <span>CO₂ Absorption</span></h3>
+                        <p>সরাসরি কার্বন ডাইঅক্সাইড শোষণ করে সেটিকে অ-ক্ষতিকর CaCO₃ তে রূপান্তর করে।</p>
+                    </div>
+                </div>
+
+                <div class="layer-card">
+                    <div class="layer-num">03</div>
+                    <div class="layer-info">
+                        <h3>BASE LAYER <span>Bio-Friendly Base</span></h3>
+                        <p>উন্নত স্থায়িত্ব এবং পরিবেশের ভারসাম্য বজায় রাখার জন্য বিশেষ ইকো-বেস।</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="visual-side">
+            <div class="block-3d-visual">
+                <div class="v-layer l1">TiO₂ LAYER</div>
+                <div class="v-layer l2">CO₂ ABSORPTION</div>
+                <div class="v-layer l3">BIO-BASE</div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

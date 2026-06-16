@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide 5 - Scientific Mechanism</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;800;900&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* ==========================================
+           1. RESET & BASE STYLES
+           ========================================== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body, html { 
+            width: 100vw; height: 100vh; overflow: hidden; 
+            background-color: #ffffff; 
+            font-family: 'Hind Siliguri', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .bg-canvas {
+            position: absolute; inset: 0;
+            background: 
+                radial-gradient(circle at 0% 0%, rgba(13, 148, 136, 0.03) 0%, transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(2, 132, 199, 0.03) 0%, transparent 40%),
+                #ffffff;
+            z-index: -1;
+        }
+
+        /* ==========================================
+           2. LAYOUT DESIGN
+           ========================================== */
+        .slide-container {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center;
+            padding: 0 120px;
+        }
+
+        .header-area { margin-bottom: 40px; text-align: left; }
+
+        .grid-layout { 
+            display: grid; 
+            grid-template-columns: 1.1fr 0.9fr; 
+            gap: 70px; 
+            align-items: center; 
+        }
+
+        /* ==========================================
+           3. TYPOGRAPHY & ELEMENTS
+           ========================================== */
+        .section-label {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700; color: #0d9488;
+            letter-spacing: 4px; font-size: 14px;
+            margin-bottom: 15px; display: block;
+            text-transform: uppercase;
+        }
+
+        h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 60px; font-weight: 900;
+            color: #0f172a; line-height: 1;
+            letter-spacing: -2px;
+        }
+        h2 span { color: #0d9488; }
+
+        /* Scientific Equation Box (Updated for Multiple Lines) */
+        .equation-box {
+            background: #f8fafc;
+            border-radius: 30px;
+            padding: 30px 40px;
+            border: 1px solid rgba(0,0,0,0.03);
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.01);
+        }
+
+        .equation-list {
+            display: flex; flex-direction: column; 
+            gap: 8px; text-align: left; 
+            margin: 0 auto; width: fit-content;
+        }
+
+        .eq-item {
+            font-size: 26px; color: #0d9488; 
+            font-family: 'Outfit', sans-serif; font-weight: 800; 
+            display: flex; align-items: center; gap: 15px;
+            letter-spacing: 1px;
+        }
+
+        .eq-item .arr { color: #94a3b8; font-weight: 400; }
+        
+        .eq-item small { 
+            font-size: 16px; color: #64748b; 
+            font-weight: 600; margin-left: 5px; 
+            letter-spacing: 0;
+        }
+
+        .eq-divider { 
+            width: 100%; height: 1px; 
+            background: rgba(13, 148, 136, 0.15); 
+            margin: 8px 0; 
+        }
+
+        .equation-label {
+            font-size: 16px; color: #94a3b8; margin-top: 20px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 2px;
+        }
+
+        /* Mechanism Description */
+        .mechanism-text p {
+            font-size: 21px; color: #475569; line-height: 1.6; margin-bottom: 20px;
+        }
+        .mechanism-text strong { color: #0f172a; font-weight: 700; }
+
+        /* Process Visual */
+        .visual-card {
+            background: #ffffff;
+            border-radius: 40px;
+            overflow: hidden;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.08);
+            border: 1px solid #f1f5f9;
+            height: 480px;
+            position: relative;
+        }
+        .visual-card img { width: 100%; height: 100%; object-fit: cover; }
+
+        .floating-info {
+            position: absolute; bottom: 30px; left: 30px; right: 30px;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 20px 25px; border-radius: 20px;
+            color: #fff; display: flex; align-items: center; gap: 15px;
+        }
+        .info-icon { color: #0d9488; font-size: 24px; }
+    </style>
+</head>
+<body>
+
+    <div class="bg-canvas"></div>
+
+    <div class="slide-container">
+        
+        <div class="header-area">
+            <span class="section-label">Scientific Mechanism</span>
+            <h2>HOW IT <span>WORKS.</span></h2>
+        </div>
+
+        <div class="grid-layout">
+            <div class="mechanism-text">
+                <div class="equation-box">
+                    <div class="equation-list">
+                        <div class="eq-item"><span>NO + O<sub>2</sub></span> <span class="arr">&rarr;</span> <span>NO<sub>2</sub></span></div>
+                        <div class="eq-item"><span>NO<sub>2</sub> + OH</span> <span class="arr">&rarr;</span> <span>HNO<sub>3</sub> <small>(Nitrate)</small></span></div>
+                        
+                        <div class="eq-divider"></div>
+                        
+                        <div class="eq-item"><span>SO<sub>2</sub> + O<sub>2</sub></span> <span class="arr">&rarr;</span> <span>SO<sub>3</sub></span></div>
+                        <div class="eq-item"><span>SO<sub>3</sub> + H<sub>2</sub>O</span> <span class="arr">&rarr;</span> <span>H<sub>2</sub>SO<sub>4</sub> <small>(Sulfate)</small></span></div>
+                    </div>
+                    <p class="equation-label">Photocatalytic Reaction Process</p>
+                </div>
+
+                <p>সূর্যের আলোর (UV Ray) উপস্থিতিতে <strong>TiO₂</strong> একটি শক্তিশালী অনুঘটক হিসেবে কাজ করে।</p>
+                <p>এটি বাতাসের বিষাক্ত নাইট্রোজেন অক্সাইড (NOx) এবং সালফার ডাইঅক্সাইড (SOx) গ্যাসকে ভেঙে নিরাপদ <strong>নাইট্রেট ও সালফেট</strong>-এ পরিণত করে, যা বৃষ্টির পানিতে ধুয়ে প্রাকৃতিক সার হিসেবে কাজ করে।</p>
+            </div>
+
+            <div class="visual-card">
+                <img src="https://saifulinfo.com/imagelink/uploads/img_69dd2dabd423f2.31159097.webp" alt="Photocatalysis process">
+                <div class="floating-info">
+                    <div class="info-icon"><i class="fa-solid fa-microscope"></i></div>
+                    <p style="font-size: 16px; line-height: 1.4; margin: 0; color: #cbd5e1;">ন্যানো সাইজের টাইটানিয়াম ডাইঅক্সাইড কণা ১০০% প্রাকৃতিক প্রক্রিয়ায় বাতাস পরিশোধন করে।</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

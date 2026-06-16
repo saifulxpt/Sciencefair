@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide - Architectural Color Catalog</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;800;900&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: { 
+                extend: { 
+                    colors: { primary: '#0d9488', darkSlate: '#0f172a' }, 
+                    fontFamily: { eng: ['Outfit', 'sans-serif'], bn: ['Hind Siliguri', 'sans-serif'] } 
+                } 
+            }
+        }
+    </script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body, html { width: 100vw; height: 100vh; overflow: hidden; background-color: #ffffff; font-family: 'Outfit', sans-serif; color: #0f172a; }
+        
+        .bg-canvas {
+            position: absolute; inset: 0;
+            background: 
+                radial-gradient(circle at 100% 0%, rgba(13, 148, 136, 0.04) 0%, transparent 40%),
+                radial-gradient(circle at 0% 100%, rgba(2, 132, 199, 0.04) 0%, transparent 40%),
+                #ffffff;
+            z-index: -1;
+        }
+        
+        /* Concrete texture style overlay for paint swatches */
+        .concrete-texture {
+            position: relative;
+        }
+        .concrete-texture::after {
+            content: ''; position: absolute; inset: 0;
+            background-image: url('https://www.transparenttextures.com/patterns/concrete-wall.png');
+            opacity: 0.15; mix-blend-mode: overlay; pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-canvas"></div>
+
+    <div class="w-full h-full p-10 flex flex-col justify-between">
+        
+        <div class="flex justify-between items-center mb-4">
+            <div>
+                <span class="font-eng font-bold text-primary tracking-[4px] text-xs uppercase block mb-1">Customization & Aesthetics</span>
+                <h2 class="font-eng font-black text-5xl text-slate-900 leading-none tracking-tight uppercase">ARCHITECTURAL <span class="text-primary">COLOR CATALOG.</span></h2>
+            </div>
+            <div class="bg-slate-50 px-5 py-2.5 rounded-2xl border border-slate-100 flex items-center gap-2 shadow-sm">
+                <i class="fa-solid fa-palette text-primary text-sm"></i>
+                <span class="font-eng font-bold text-slate-500 text-xs tracking-widest uppercase">Eco-Block Facade Options</span>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-5 gap-5 flex-1 my-2">
+            
+            <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+                <div class="concrete-texture w-full h-28 rounded-xl shadow-inner bg-[#FFFFFF] border border-slate-200"></div>
+                <div class="mt-2">
+                    <p class="font-bold text-base text-slate-800 flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-slate-400"></span> Pure White</p>
+                    <p class="text-[10px] font-bold text-primary uppercase font-eng tracking-wider mt-0.5">Pigment: TiO₂</p>
+                    <p class="text-xs text-slate-500 mt-1 leading-tight font-medium">Most effective photocatalytic color. Provides the best heat reflection and UV activation.</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+                <div class="concrete-texture w-full h-28 rounded-xl shadow-inner bg-[#E6C29E]"></div>
+                <div class="mt-2">
+                    <p class="font-bold text-base text-slate-800 flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#D2B48C]"></span> Nude / Sand</p>
+                    <p class="text-[10px] font-bold text-primary uppercase font-eng tracking-wider mt-0.5">Yellow + Red Oxide</p>
+                    <p class="text-xs text-slate-500 mt-1 leading-tight font-medium">Premium architectural look. A perfect match for modern building designs and facades.</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+                <div class="concrete-texture w-full h-28 rounded-xl shadow-inner bg-[#C35237]"></div>
+                <div class="mt-2">
+                    <p class="font-bold text-base text-slate-800 flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#C35237]"></span> Terracotta</p>
+                    <p class="text-[10px] font-bold text-primary uppercase font-eng tracking-wider mt-0.5">Red Iron Oxide</p>
+                    <p class="text-xs text-slate-500 mt-1 leading-tight font-medium">Provides a traditional natural brick or clay block look. Highly aesthetic and classic.</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+                <div class="concrete-texture w-full h-28 rounded-xl shadow-inner bg-[#8A9597]"></div>
+                <div class="mt-2">
+                    <p class="font-bold text-base text-slate-800 flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#8A9597]"></span> Cement Grey</p>
+                    <p class="text-[10px] font-bold text-primary uppercase font-eng tracking-wider mt-0.5">Black Oxide + Grey Blend</p>
+                    <p class="text-xs text-slate-500 mt-1 leading-tight font-medium">The perfect tone for modern industrial and minimalist architectural building styles.</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+                <div class="concrete-texture w-full h-28 rounded-xl shadow-inner bg-[#FFFDD0]"></div>
+                <div class="mt-2">
+                    <p class="font-bold text-base text-slate-800 flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#E7E4C4]"></span> Cream / Ivory</p>
+                    <p class="text-[10px] font-bold text-primary uppercase font-eng tracking-wider mt-0.5">White + Yellow Oxide</p>
+                    <p class="text-xs text-slate-500 mt-1 leading-tight font-medium">Offers an elegant and light finish, which helps maintain high solar reflectance.</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+                <div class="concrete-texture w-full h-28 rounded-xl shadow-inner bg-[#FFA54F]"></div>
+                <div class="mt-2">
+                    <p class="font-bold text-base text-slate-800 flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#FFA54F]"></span> Light Orange</p>
+                    <p class="text-[10px] font-bold text-primary uppercase font-eng tracking-wider mt-0.5">Red + Yellow Oxide</p>
+                    <p class="text-xs text-slate-500 mt-1 leading-tight font-medium">Ideal for achieving a warm, clay-tone architectural finish for residential structures.</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+                <div class="concrete-texture w-full h-28 rounded-xl shadow-inner bg-[#6B8E23]"></div>
+                <div class="mt-2">
+                    <p class="font-bold text-base text-slate-800 flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#6B8E23]"></span> Olive Green</p>
+                    <p class="text-[10px] font-bold text-primary uppercase font-eng tracking-wider mt-0.5">Chromium Oxide Green</p>
+                    <p class="text-xs text-slate-500 mt-1 leading-tight font-medium">Provides a natural moss-green vibe, perfectly suited for modern eco-building styles.</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+                <div class="concrete-texture w-full h-28 rounded-xl shadow-inner bg-[#87CEEB]"></div>
+                <div class="mt-2">
+                    <p class="font-bold text-base text-slate-800 flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#87CEEB]"></span> Sky Blue</p>
+                    <p class="text-[10px] font-bold text-primary uppercase font-eng tracking-wider mt-0.5">Ultramarine Blue</p>
+                    <p class="text-xs text-slate-500 mt-1 leading-tight font-medium">Delivers a modern decorative look. Light tones ensure maximum coating efficiency.</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+                <div class="concrete-texture w-full h-28 rounded-xl shadow-inner bg-[#B19CD9]"></div>
+                <div class="mt-2">
+                    <p class="font-bold text-base text-slate-800 flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#B19CD9]"></span> Soft Purple</p>
+                    <p class="text-[10px] font-bold text-primary uppercase font-eng tracking-wider mt-0.5">Ultramarine + Red Oxide</p>
+                    <p class="text-xs text-slate-500 mt-1 leading-tight font-medium">Creates a unique and captivating look for building exteriors and aesthetic facade designs.</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+                <div class="concrete-texture w-full h-28 rounded-xl shadow-inner bg-[#5C4033]"></div>
+                <div class="mt-2">
+                    <p class="font-bold text-base text-slate-800 flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#5C4033]"></span> Chocolate Brown</p>
+                    <p class="text-[10px] font-bold text-primary uppercase font-eng tracking-wider mt-0.5">Red + Black Oxide</p>
+                    <p class="text-xs text-slate-500 mt-1 leading-tight font-medium">Gives a solid, durable, and natural earthy finish that closely resembles natural soil.</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="flex justify-between items-center border-t border-slate-100 pt-3 text-slate-400 text-xs">
+            <p><i class="fa-solid fa-circle-info text-primary mr-1"></i> Note: All pigments used are <strong>UV-Stable</strong> and fully compatible with the <strong>Photocatalytic TiO₂</strong> active coating.</p>
+            <p class="font-eng font-black text-[10px] tracking-widest uppercase opacity-60">Eco-Block Project v2.0</p>
+        </div>
+
+    </div>
+
+</body>
+</html>

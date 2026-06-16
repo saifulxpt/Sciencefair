@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slide 10 - Comparative Analysis (Coating Focus)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;700;800;900&family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* ==========================================
+           1. RESET & BASE STYLES
+           ========================================== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body, html { 
+            width: 100vw; height: 100vh; overflow: hidden; 
+            background-color: #ffffff; 
+            font-family: 'Hind Siliguri', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .bg-canvas {
+            position: absolute; inset: 0;
+            background: 
+                radial-gradient(circle at 0% 0%, rgba(13, 148, 136, 0.03) 0%, transparent 40%),
+                radial-gradient(circle at 100% 100%, rgba(15, 23, 42, 0.02) 0%, transparent 40%),
+                #fcfdfe;
+            z-index: -1;
+        }
+
+        /* ==========================================
+           2. LAYOUT DESIGN
+           ========================================== */
+        .slide-container {
+            width: 100%; height: 100%;
+            display: flex; flex-direction: column;
+            justify-content: center;
+            padding: 0 120px;
+        }
+
+        .header-area { margin-bottom: 50px; }
+
+        /* ==========================================
+           3. TYPOGRAPHY & ELEMENTS
+           ========================================== */
+        .section-label {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700; color: #0d9488;
+            letter-spacing: 4px; font-size: 14px;
+            margin-bottom: 15px; display: block;
+            text-transform: uppercase;
+        }
+
+        h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 60px; font-weight: 900;
+            color: #0f172a; line-height: 1;
+            letter-spacing: -2px;
+        }
+        h2 span { color: #0d9488; }
+
+        /* Premium Table Styling (Updated for Coating) */
+        .comparison-wrapper {
+            width: 100%;
+            background: #ffffff;
+            border-radius: 35px;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.03);
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        
+        th { 
+            background: #f8fafc; padding: 30px; 
+            font-family: 'Outfit', sans-serif; font-size: 20px; 
+            font-weight: 800; color: #1e293b; text-align: left;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        
+        td { padding: 25px 30px; font-size: 19px; color: #475569; border-bottom: 1px solid #f8fafc; }
+        
+        /* Highlighting Smart Coating Column */
+        .eco-col { color: #0d9488; font-weight: 700; background: rgba(13, 148, 136, 0.02); }
+        th.eco-header { color: #0d9488; background: rgba(13, 148, 136, 0.05); }
+
+        .icon-yes { color: #0d9488; font-size: 22px; }
+        .icon-no { color: #f43f5e; font-size: 22px; }
+
+        .badge-pro {
+            background: #0d9488; color: #fff;
+            padding: 4px 12px; border-radius: 8px;
+            font-size: 12px; font-weight: 800;
+            text-transform: uppercase; vertical-align: middle;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bg-canvas"></div>
+
+    <div class="slide-container">
+        
+        <div class="header-area">
+            <span class="section-label">Performance & Viability Analysis</span>
+            <h2>COST VS <span>BENEFIT.</span></h2>
+        </div>
+
+        <div class="comparison-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 34%;">Feature Analysis</th>
+                        <th style="width: 33%;">Standard Wall Paint</th>
+                        <th style="width: 33%;" class="eco-header">Smart TiO₂ Coating <span class="badge-pro">Highly Effective</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Air Purification (NOx Reduction)</td>
+                        <td><i class="fa-solid fa-circle-xmark icon-no"></i> &nbsp; None</td>
+                        <td class="eco-col"><i class="fa-solid fa-circle-check icon-yes"></i> &nbsp; High (20%-59%)</td>
+                    </tr>
+                    <tr>
+                        <td>Self-Cleaning Property</td>
+                        <td><i class="fa-solid fa-circle-xmark icon-no"></i> &nbsp; No (Dirt Accumulates)</td>
+                        <td class="eco-col"><i class="fa-solid fa-circle-check icon-yes"></i> &nbsp; Yes (Photocatalytic)</td>
+                    </tr>
+                    <tr>
+                        <td>Anti-Bacterial Performance</td>
+                        <td><i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b"></i> &nbsp; Low</td>
+                        <td class="eco-col"><i class="fa-solid fa-shield-halved icon-yes"></i> &nbsp; Anti-Microbial Shield</td>
+                    </tr>
+                    <tr>
+                        <td>Cost of Application</td>
+                        <td>Base Rate</td>
+                        <td class="eco-col">+slightly Extra (per sqft)</td>
+                    </tr>
+                    <tr>
+                        <td>Maintenance & ROI</td>
+                        <td>High (Frequent Repaint)</td>
+                        <td class="eco-col"><i class="fa-solid fa-leaf icon-yes"></i> &nbsp; Low </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+</body>
+</html>
