@@ -52,7 +52,8 @@ export default function VoiceAssistant() {
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
   // Canvas & Web Audio references
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const desktopCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const mobileCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -189,7 +190,12 @@ export default function VoiceAssistant() {
       cancelAnimationFrame(animationRef.current);
     }
 
-    const canvas = canvasRef.current;
+    const getActiveCanvas = () => {
+      if (typeof window === "undefined") return null;
+      return window.innerWidth >= 1024 ? desktopCanvasRef.current : mobileCanvasRef.current;
+    };
+
+    const canvas = getActiveCanvas();
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
@@ -203,9 +209,27 @@ export default function VoiceAssistant() {
     let phase = 0;
 
     const draw = () => {
-      if (!canvasRef.current || !ctx) return;
-      const w = canvasRef.current.width;
-      const h = canvasRef.current.height;
+      const activeCanvas = getActiveCanvas();
+      if (!activeCanvas) {
+        animationRef.current = requestAnimationFrame(draw);
+        return;
+      }
+      const activeCtx = activeCanvas.getContext("2d");
+      if (!activeCtx) {
+        animationRef.current = requestAnimationFrame(draw);
+        return;
+      }
+
+      const canvas = activeCanvas;
+      const ctx = activeCtx;
+
+      if (canvas.width !== canvas.offsetWidth || canvas.height !== canvas.offsetHeight) {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+      }
+
+      const w = canvas.width;
+      const h = canvas.height;
       ctx.clearRect(0, 0, w, h);
 
       if (currentStatus === "listening") {
@@ -511,7 +535,7 @@ export default function VoiceAssistant() {
 
   return (
     <div 
-      className="min-h-screen flex flex-col aurora-bg select-none"
+      className="h-[100dvh] lg:min-h-screen lg:h-auto flex flex-col aurora-bg select-none overflow-hidden lg:overflow-visible"
       style={{ fontFamily: "'Hind Siliguri', sans-serif" }}
     >
       {/* Background Aurora Orbs */}
@@ -558,10 +582,10 @@ export default function VoiceAssistant() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow max-w-6xl w-full mx-auto px-4 py-6 md:py-8 grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-center relative z-10">
+      <main className="flex-grow max-w-6xl w-full mx-auto px-4 py-4 md:py-8 flex flex-col lg:grid lg:grid-cols-12 gap-4 md:gap-8 items-stretch lg:items-center relative z-10 min-h-0">
         
-        {/* Left: Holographic Core & Real-time Canvas Wave */}
-        <div className="lg:col-span-5 flex flex-col items-center justify-center space-y-6 md:space-y-8 py-2 md:py-4">
+        {/* Left: Holographic Core & Real-time Canvas Wave (Visible only on desktop by default) */}
+        <div className="hidden lg:flex lg:col-span-5 flex-col items-center justify-center space-y-6 md:space-y-8 py-2 md:py-4">
           
           {/* Concentric rotating elements */}
           <div className={`holo-orb-container ${status}`}>
@@ -595,7 +619,7 @@ export default function VoiceAssistant() {
 
           {/* HTML5 Canvas visualizer container */}
           <div className="canvas-visualizer-container w-full max-w-sm">
-            <canvas ref={canvasRef} className="canvas-visualizer" />
+            <canvas ref={desktopCanvasRef} className="canvas-visualizer" />
           </div>
 
           {errorMessage && (
@@ -606,9 +630,9 @@ export default function VoiceAssistant() {
         </div>
 
         {/* Right: Dialogue Box Chat Feed */}
-        <div className="lg:col-span-7 space-y-6 flex flex-col justify-center">
+        <div className="lg:col-span-7 flex flex-col flex-grow lg:flex-grow-0 min-h-0 justify-between lg:justify-center gap-3 lg:gap-6">
           
-          <div className="chat-container glass-panel bg-white/80 border-white/40 shadow-xl">
+          <div className="chat-container glass-panel bg-white/80 border-white/40 shadow-xl flex flex-col flex-1 min-h-0">
             <div className="chat-feed-header flex items-center justify-between gap-4">
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-600 shrink-0">
@@ -645,7 +669,7 @@ export default function VoiceAssistant() {
               </div>
             </div>
 
-            <div className="chat-feed scrollbar-thin">
+            <div className="chat-feed scrollbar-thin flex-grow overflow-y-auto">
               {chatHistory.map((msg, index) => (
                 <div 
                   key={index} 
@@ -671,19 +695,50 @@ export default function VoiceAssistant() {
               <div ref={chatEndRef} />
             </div>
 
-            <form onSubmit={handleTextSubmit} className="chat-input-container bg-white/95">
+            {/* Mobile Preset Questions Carousel (Hidden on Desktop) */}
+            <div className="px-4 py-2 border-t border-slate-100 flex flex-row overflow-x-auto gap-2 scrollbar-none visible-mobile shrink-0 bg-white/95">
+              {sampleQuestions.map((q, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleSampleClick(q)}
+                  disabled={status === "processing"}
+                  className="px-3.5 py-2 bg-slate-50/70 border border-slate-200/60 rounded-full text-xs font-bold text-slate-700 hover:text-blue-700 hover:bg-blue-50/40 hover:border-blue-300 transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0"
+                >
+                  <span>{q}</span>
+                  <Sparkles className="w-3 h-3 text-blue-500" />
+                </button>
+              ))}
+            </div>
+
+            <form onSubmit={handleTextSubmit} className="chat-input-container bg-white/95 gap-2 shrink-0">
+              {/* Mic button directly inside chat input bar for mobile users */}
+              <button
+                type="button"
+                onClick={toggleListening}
+                disabled={status === "processing"}
+                className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all cursor-pointer shrink-0 ${
+                  status === "listening"
+                    ? "bg-rose-50 border-rose-100 text-rose-500 animate-pulse"
+                    : "bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100"
+                }`}
+                title="ভয়েস অ্যাসিস্ট্যান্ট চালু করুন"
+              >
+                <Mic className="w-4 h-4" />
+              </button>
+
               <input
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 placeholder="এখানে বাংলায় আপনার প্রশ্নটি লিখুন..."
                 disabled={status === "processing"}
-                className="chat-input border-slate-200/80 bg-slate-50/50"
+                className="chat-input border-slate-200/80 bg-slate-50/50 text-base"
+                style={{ fontSize: "16px" }}
               />
               <button
                 type="submit"
                 disabled={status === "processing" || !inputText.trim()}
-                className="chat-send-btn shadow-md shadow-blue-500/25"
+                className="chat-send-btn shadow-md shadow-blue-500/25 shrink-0"
                 title="বার্তা পাঠান"
               >
                 <Send className="w-4 h-4 text-white" />
@@ -691,8 +746,8 @@ export default function VoiceAssistant() {
             </form>
           </div>
 
-          {/* Preset Questions */}
-          <div className="glass-panel p-5 md:p-6 bg-white/80 shadow-lg border-blue-500/10">
+          {/* Preset Questions (Desktop only) */}
+          <div className="glass-panel p-5 md:p-6 bg-white/80 shadow-lg border-blue-500/10 hidden-mobile">
             <div className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2">
               <HelpCircle className="w-4 h-4 text-blue-500" /> সচরাচর জিজ্ঞাসিত প্রশ্নসমূহ
             </div>
@@ -719,10 +774,90 @@ export default function VoiceAssistant() {
 
       </main>
 
-      {/* Footer */}
-      <footer className="py-6 text-center text-[10px] text-slate-400 font-bold border-t border-slate-200/50 bg-white/50 backdrop-blur-sm relative z-10">
+      {/* Footer (Desktop only) */}
+      <footer className="py-6 text-center text-[10px] text-slate-400 font-bold border-t border-slate-200/50 bg-white/50 backdrop-blur-sm relative z-10 hidden-mobile">
         © 2026 Air Purifying Concrete Block • যশোর পলিটেকনিক ইনস্টিটিউট
       </footer>
+
+      {/* Mobile Glassmorphic Voice Overlay (Shown only on mobile when voice state is active) */}
+      {status !== "idle" && (
+        <div className="voice-overlay">
+          {/* Background Aurora Orbs for extra aesthetic depth */}
+          <div className="aurora-orb aurora-orb-1" style={{ opacity: 0.4 }} />
+          <div className="aurora-orb aurora-orb-3" style={{ opacity: 0.3 }} />
+          
+          <div className="flex flex-col items-center justify-center space-y-6 w-full max-w-sm relative z-20">
+            
+            {/* Dynamic Status Title */}
+            <div className="text-center">
+              <div className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">AeroStone AI Voice</div>
+              <div className="text-base font-extrabold text-slate-800 tracking-wide px-4">
+                {getStatusMessage()}
+              </div>
+            </div>
+
+            {/* Concentric rotating elements */}
+            <div className={`holo-orb-container ${status}`}>
+              <div className="holo-ring-outer" />
+              <div className="holo-ring-middle" />
+              <div className="holo-ring-inner" />
+              
+              <button
+                onClick={toggleListening}
+                disabled={status === "processing"}
+                className="holo-core-orb"
+              >
+                <div className="w-18 h-18 rounded-full bg-white flex items-center justify-center shadow-lg border border-slate-100 transition-transform">
+                  {status === "listening" ? (
+                    <Mic className="w-8 h-8 text-rose-500 animate-pulse" />
+                  ) : status === "speaking" ? (
+                    <Headphones className="w-8 h-8 text-blue-600 animate-bounce" />
+                  ) : (
+                    <Mic className="w-8 h-8 text-blue-600" />
+                  )}
+                </div>
+              </button>
+            </div>
+
+            <div className="text-center space-y-1">
+              <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                {status === "listening" ? "Listening..." : status === "processing" ? "Processing..." : status === "speaking" ? "Speaking..." : "Tap Core to Ask"}
+              </div>
+            </div>
+
+            {/* Audio Canvas visualizer container */}
+            <div className="canvas-visualizer-container w-full">
+              <canvas 
+                ref={(el) => {
+                  if (el) mobileCanvasRef.current = el;
+                }} 
+                className="canvas-visualizer" 
+              />
+            </div>
+
+            {errorMessage && (
+              <div className="bg-rose-50 border border-rose-100 rounded-xl px-4 py-2 text-xs font-semibold text-rose-500 text-center shadow-sm">
+                {errorMessage}
+              </div>
+            )}
+
+            {/* Cancel Button */}
+            <button
+              onClick={() => {
+                stopSpeaking();
+                if (status === "listening") {
+                  recognition?.stop();
+                }
+                setStatus("idle");
+              }}
+              className="px-6 py-2.5 bg-slate-800 text-white rounded-full text-xs font-bold shadow-md hover:bg-slate-900 transition-all cursor-pointer"
+            >
+              টেক্সট মোডে ফিরুন
+            </button>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );
