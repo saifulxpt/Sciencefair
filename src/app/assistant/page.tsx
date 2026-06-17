@@ -520,19 +520,19 @@ export default function VoiceAssistant() {
       <div className="aurora-orb aurora-orb-3" />
 
       {/* Header */}
-      <header className="glass-panel sticky top-0 z-50 px-6 py-4 rounded-none border-t-0 border-x-0 border-b bg-white/70 shadow-sm backdrop-blur-md">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <a href="/admin" className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors">
-            <ArrowLeft className="w-4 h-4" /> কন্ট্রোল প্যানেল
+      <header className="glass-panel sticky top-0 z-50 px-4 md:px-6 py-4 rounded-none border-t-0 border-x-0 border-b bg-white/70 shadow-sm backdrop-blur-md">
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
+          <a href="/admin" className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors shrink-0">
+            <ArrowLeft className="w-4 h-4" /> <span className="hidden-mobile">কন্ট্রোল প্যানেল</span>
           </a>
           
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600 icon-container-glow">
-              <Sparkles className="w-5 h-5 animate-pulse" />
+          <div className="flex items-center gap-2 max-w-[60%] sm:max-w-none">
+            <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-600 icon-container-glow shrink-0">
+              <Sparkles className="w-4.5 h-4.5 md:w-5 md:h-5 animate-pulse" />
             </div>
-            <div className="text-left">
-              <div className="text-sm font-extrabold text-slate-800 tracking-wide">Air Purifying Concrete Block AI</div>
-              <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Air Purifying Concrete Block</div>
+            <div className="text-left min-w-0">
+              <div className="text-sm font-black text-blue-600 tracking-wider truncate">AeroStone AI</div>
+              <div className="text-[9px] text-slate-400 font-bold uppercase tracking-widest hidden-mobile truncate">Science Fair 2026</div>
             </div>
           </div>
 
@@ -545,23 +545,23 @@ export default function VoiceAssistant() {
                 if (status === "speaking") setStatus("idle");
               }
             }}
-            className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${
+            className={`w-8.5 h-8.5 md:w-9 md:h-9 rounded-xl border flex items-center justify-center transition-all cursor-pointer shrink-0 ${
               isMuted 
                 ? "bg-rose-50 border-rose-100 text-rose-500 hover:bg-rose-100" 
                 : "bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100"
             }`}
             title={isMuted ? "শব্দ সচল করুন" : "শব্দ বন্ধ করুন"}
           >
-            {isMuted ? <VolumeX className="w-4.5 h-4.5" /> : <Volume2 className="w-4.5 h-4.5" />}
+            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
           </button>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow max-w-6xl w-full mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+      <main className="flex-grow max-w-6xl w-full mx-auto px-4 py-6 md:py-8 grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 items-center relative z-10">
         
         {/* Left: Holographic Core & Real-time Canvas Wave */}
-        <div className="lg:col-span-5 flex flex-col items-center justify-center space-y-8 py-4">
+        <div className="lg:col-span-5 flex flex-col items-center justify-center space-y-6 md:space-y-8 py-2 md:py-4">
           
           {/* Concentric rotating elements */}
           <div className={`holo-orb-container ${status}`}>
@@ -576,17 +576,17 @@ export default function VoiceAssistant() {
             >
               <div className="w-18 h-18 rounded-full bg-white flex items-center justify-center shadow-lg border border-slate-100 transition-transform hover:scale-105">
                 {status === "listening" ? (
-                  <Mic className="w-9 h-9 text-rose-500 animate-pulse" />
+                  <Mic className="w-8 h-8 text-rose-500 animate-pulse" />
                 ) : status === "speaking" ? (
-                  <Headphones className="w-9 h-9 text-blue-600 animate-bounce" />
+                  <Headphones className="w-8 h-8 text-blue-600 animate-bounce" />
                 ) : (
-                  <Mic className="w-9 h-9 text-blue-600" />
+                  <Mic className="w-8 h-8 text-blue-600" />
                 )}
               </div>
             </button>
           </div>
 
-          <div className="text-center space-y-1.5">
+          <div className="text-center space-y-1">
             <div className="text-sm font-extrabold text-slate-800 tracking-wide">{getStatusMessage()}</div>
             <div className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
               {status === "listening" ? "Listening..." : status === "processing" ? "Processing..." : status === "speaking" ? "Speaking..." : "Tap Core to Ask"}
@@ -599,7 +599,7 @@ export default function VoiceAssistant() {
           </div>
 
           {errorMessage && (
-            <div className="bg-rose-50 border border-rose-100 rounded-xl px-4 py-2.5 text-xs font-semibold text-rose-500 max-w-sm text-center shadow-sm">
+            <div className="bg-rose-50 border border-rose-100 rounded-xl px-4 py-2 text-xs font-semibold text-rose-500 max-w-sm text-center shadow-sm">
               {errorMessage}
             </div>
           )}
@@ -609,14 +609,14 @@ export default function VoiceAssistant() {
         <div className="lg:col-span-7 space-y-6 flex flex-col justify-center">
           
           <div className="chat-container glass-panel bg-white/80 border-white/40 shadow-xl">
-            <div className="chat-feed-header flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-600">
-                  <MessageSquare className="w-4.5 h-4.5" />
+            <div className="chat-feed-header flex items-center justify-between gap-4">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-600 shrink-0">
+                  <MessageSquare className="w-4 h-4" />
                 </div>
-                <div>
-                  <div className="text-xs font-extrabold text-slate-800">অ্যাসিস্ট্যান্ট কথোপকথন ফিড</div>
-                  <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Air Purifying Concrete Block Dialogue History</div>
+                <div className="min-w-0">
+                  <div className="text-xs font-extrabold text-slate-800 truncate">অ্যাসিস্ট্যান্ট কথোপকথন ফিড</div>
+                  <div className="text-[9px] text-slate-400 font-bold uppercase tracking-wider hidden-mobile truncate">AeroStone Dialogue History</div>
                 </div>
               </div>
               
@@ -652,14 +652,14 @@ export default function VoiceAssistant() {
                   className={`chat-bubble ${msg.sender === "user" ? "user" : "ai"}`}
                 >
                   {msg.sender === "user" ? (
-                    <div className="flex items-start gap-2.5">
+                    <div className="flex items-start gap-2">
                       <span className="flex-grow">{msg.text}</span>
-                      <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-[9px] font-black text-white shrink-0 mt-0.5">
+                      <div className="w-6 h-6 rounded-full bg-white/25 flex items-center justify-center text-[9px] font-black text-white shrink-0 mt-0.5">
                         ME
                       </div>
                     </div>
                   ) : (
-                    <div className="flex items-start gap-2.5">
+                    <div className="flex items-start gap-2">
                       <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 shrink-0 mt-0.5">
                         <Sparkles className="w-3.5 h-3.5" />
                       </div>
@@ -692,11 +692,11 @@ export default function VoiceAssistant() {
           </div>
 
           {/* Preset Questions */}
-          <div className="glass-panel p-6 bg-white/80 shadow-lg border-blue-500/10">
-            <div className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2.5">
-              <HelpCircle className="w-4.5 h-4.5 text-blue-500" /> সচরাচর জিজ্ঞাসিত প্রশ্নসমূহ
+          <div className="glass-panel p-5 md:p-6 bg-white/80 shadow-lg border-blue-500/10">
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5 border-b border-slate-100 pb-2">
+              <HelpCircle className="w-4 h-4 text-blue-500" /> সচরাচর জিজ্ঞাসিত প্রশ্নসমূহ
             </div>
-            <p className="text-[11px] text-slate-400 leading-relaxed mb-2">
+            <p className="text-[11px] text-slate-400 leading-relaxed mb-2.5">
               মাইক্রোফোনের পাশাপাশি সরাসরি নিচের প্রশ্নগুলোতে ক্লিক করেও আপনি এআই অ্যাসিস্ট্যান্টের সাহায্য নিতে পারেন:
             </p>
 
@@ -706,7 +706,7 @@ export default function VoiceAssistant() {
                   key={idx}
                   onClick={() => handleSampleClick(q)}
                   disabled={status === "processing"}
-                  className="w-full text-left p-3 bg-slate-50/70 border border-slate-200/60 rounded-xl text-xs font-bold text-slate-700 hover:text-blue-700 hover:bg-blue-50/40 hover:border-blue-300 transition-all flex items-center justify-between cursor-pointer preset-capsule"
+                  className="w-full text-left p-2.5 bg-slate-50/70 border border-slate-200/60 rounded-xl text-xs font-bold text-slate-700 hover:text-blue-700 hover:bg-blue-50/40 hover:border-blue-300 transition-all flex items-center justify-between cursor-pointer preset-capsule"
                 >
                   <span>{q}</span>
                   <Sparkles className="w-3.5 h-3.5 text-slate-300 hover:text-blue-600 shrink-0 ml-2" />

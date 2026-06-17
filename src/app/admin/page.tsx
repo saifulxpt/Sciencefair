@@ -239,9 +239,30 @@ export default function AdminPanel() {
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        
+        .hidden-mobile { display: inline-block; }
+        .visible-mobile { display: none; }
+        
+        @media (max-width: 768px) {
+          .hidden-mobile { display: none !important; }
+          .visible-mobile { display: inline !important; }
+        }
+        
         @media (max-width: 900px) {
-          .admin-grid { grid-template-columns: 1fr !important; }
-          .admin-sidebar { display: none !important; }
+          .admin-grid { 
+            display: flex !important; 
+            flex-direction: column !important; 
+            gap: 16px !important; 
+          }
+          .admin-sidebar { 
+            order: 2 !important; 
+            display: flex !important; 
+            flex-direction: column !important; 
+            gap: 16px !important; 
+          }
+          .admin-main-content { 
+            order: 1 !important; 
+          }
         }
       `}</style>
 
@@ -252,20 +273,29 @@ export default function AdminPanel() {
         <div style={s.logo}>
           <div style={s.logoIcon}><Sliders size={15} color="#ffffff" /></div>
           <div>
-            <div style={s.logoText}>Air Purifying Concrete Block</div>
-            <div style={s.logoSub}>Admin Console • Science Fair 2026</div>
+            <div style={s.logoText}>
+              <span className="hidden-mobile">Air Purifying Concrete Block</span>
+              <span className="visible-mobile">AeroStone Admin</span>
+            </div>
+            <div className="hidden-mobile" style={s.logoSub}>Admin Console • Science Fair 2026</div>
           </div>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ fontSize: 11, color: C.muted, fontFamily: "monospace", fontWeight: 600, padding: "4px 10px", borderRadius: 6, border: `1px solid ${C.border}`, background: "rgba(255,255,255,0.03)" }}>
+          <div className="hidden-mobile" style={{ fontSize: 11, color: C.muted, fontFamily: "monospace", fontWeight: 600, padding: "4px 10px", borderRadius: 6, border: `1px solid ${C.border}`, background: "rgba(255,255,255,0.03)" }}>
             {currentTime.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
           </div>
           <div style={{ ...s.pill, ...(isConnected ? { background: C.greenBg, borderColor: C.greenBorder, color: C.green } : { background: "rgba(255,255,255,0.04)", borderColor: C.border, color: C.dim }) }}>
             {isConnected ? <><span style={{ width: 6, height: 6, borderRadius: "50%", background: C.green, animation: "blink 2s infinite", display: "inline-block" }} /> পিন {pin}</> : <><WifiOff size={10} /> সংযুক্ত নেই</>}
           </div>
-          <a href="/assistant/" target="_blank" className="hdr-link" style={s.hdrLink}><Sparkles size={12} color={C.purple} /> AI অ্যাসিস্ট্যান্ট</a>
-          <a href="/presentation/" target="_blank" className="hdr-link" style={s.hdrLink}><Tv size={12} color={C.blue} /> স্লাইডশো</a>
+          <a href="/assistant/" target="_blank" className="hdr-link" style={s.hdrLink}>
+            <Sparkles size={12} color={C.purple} /> 
+            <span className="hidden-mobile">AI অ্যাসিস্ট্যান্ট</span>
+          </a>
+          <a href="/presentation/" target="_blank" className="hdr-link" style={s.hdrLink}>
+            <Tv size={12} color={C.blue} /> 
+            <span className="hidden-mobile">স্লাইডশো</span>
+          </a>
         </div>
       </header>
 
@@ -366,7 +396,7 @@ export default function AdminPanel() {
         </div>
 
         {/* ─── Right Main ─── */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <div className="admin-main-content" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
           {/* Tab Bar */}
           <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2 }}>
